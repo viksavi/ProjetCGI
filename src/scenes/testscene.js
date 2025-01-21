@@ -1,10 +1,11 @@
+import isometric_bedroom from "../assets/isometric_bedroom.glb";
+
 async function testscene(BABYLON, engine, currentScene) {
     const { Vector3, Scene, MeshBuilder, FreeCamera, HemisphericLight } = BABYLON;
 
     const scene = new Scene(engine);
 
-    // Créer une boîte pour référence
-    const box = MeshBuilder.CreateBox("box", { size: 1 }, scene);
+    BABYLON.SceneLoader.ImportMeshAsync("", isometric_bedroom, null, scene);
 
     // Ajouter une lumière hémisphérique
     const light = new HemisphericLight("light", new Vector3(0, 1, 0), scene);
