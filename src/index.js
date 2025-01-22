@@ -11,6 +11,7 @@ import "@babylonjs/core/Helpers/sceneHelpers";
 import firstscene from "./scenes/firstscene.js";
 import secondscene from "./scenes/secondscene.js";
 import testscene from "./scenes/testscene.js";
+import thirdscene from "./scenes/thirdscene.js";
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
@@ -28,12 +29,14 @@ async function startGame() {
 
     // Gestion des touches pour changer de scène
     window.addEventListener("keydown", async (event) => {
-        if (event.key === "1") {
-            await changeScene(firstscene); // Change vers la première scène
-        } else if (event.key === "2") {
-            await changeScene(secondscene); // Change vers la seconde scène
-        } else if (event.key === "3") {
+        if (event.key === "a") {
+            await changeScene(firstscene);
+        } else if (event.key === "z") {
+            await changeScene(secondscene);
+        } else if (event.key === "e") {
             await changeScene(testscene);
+        } else if (event.key === "r") {
+            await changeScene(thirdscene);
         }
     });
 
