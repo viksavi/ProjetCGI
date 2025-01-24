@@ -9,9 +9,7 @@ import * as BABYLON from "babylonjs";
 import "@babylonjs/loaders/glTF/2.0";
 import "@babylonjs/core/Helpers/sceneHelpers";
 import firstscene from "./scenes/firstscene.js";
-import secondscene from "./scenes/secondscene.js";
 import testscene from "./scenes/testscene.js";
-import thirdscene from "./scenes/thirdscene.js";
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
@@ -32,11 +30,7 @@ async function startGame() {
         if (event.key === "a") {
             await changeScene(firstscene);
         } else if (event.key === "z") {
-            await changeScene(secondscene);
-        } else if (event.key === "e") {
             await changeScene(testscene);
-        } else if (event.key === "r") {
-            await changeScene(thirdscene);
         }
     });
 
