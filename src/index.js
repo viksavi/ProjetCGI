@@ -10,6 +10,7 @@ import "@babylonjs/loaders/glTF/2.0";
 import "@babylonjs/core/Helpers/sceneHelpers";
 import firstscene from "./scenes/firstscene.js";
 import testscene from "./scenes/testscene.js";
+import martian from "./scenes/martian.js";
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
@@ -27,10 +28,12 @@ async function startGame() {
 
     // Gestion des touches pour changer de scène
     window.addEventListener("keydown", async (event) => {
-        if (event.key === "a") {
+        if (event.key === "1") {
             await changeScene(firstscene);
-        } else if (event.key === "z") {
+        } else if (event.key === "2") {
             await changeScene(testscene);
+        } else if (event.key === "3") {
+            await changeScene(martian);
         }
     });
 

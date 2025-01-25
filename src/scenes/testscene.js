@@ -81,10 +81,7 @@ async function testscene(BABYLON, engine, currentScene) {
             }
         });
     });
-    
-    
-    
-    
+
     // Supprimer l'ancienne scène
     if (currentScene) currentScene.dispose();
 
