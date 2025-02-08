@@ -3,6 +3,7 @@ import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
 import { Engine, Scene, Vector3, HemisphericLight, ArcRotateCamera, SceneLoader,TransformNode, FreeCamera, Color4, Mesh, MeshBuilder, Matrix, Quaternion, PointLight, Color3, ShadowGenerator }  from "@babylonjs/core";
 import { AdvancedDynamicTexture, StackPanel, Button, TextBlock, Rectangle, Control, Image } from "@babylonjs/gui";
+import { EnvironmentMain } from "./main_scene/environment_house";
 
 enum State {START = 0, CUT_SCENE = 1, MAIN_SCENE = 2, SCENE_0 = 3}
 
@@ -14,6 +15,7 @@ class App {
 
     public assets;
     private _inputMap: {};
+    private _environment: EnvironmentMain;
 
     private _state: number = 0;
     private _mainScene: Scene;
@@ -214,16 +216,18 @@ class App {
         this._mainScene = scene;
     
         //...load assets
-
+        const environment = new EnvironmentMain(scene);
+        this._environment = environment;
+        await this._environment.load();
     }
 
     private async _goToMainScene(): Promise<void> {
         this._scene.detachControl();
         let scene = this._mainScene
         scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098); // a color that fit the overall color scheme better
-        let camera: ArcRotateCamera = new ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, Vector3.Zero(), scene);
+        let camera: ArcRotateCamera = new ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 10, Vector3.Zero(), scene);
         camera.setTarget(Vector3.Zero());
-        camera.attachControl(this._canvas, true); //  Разрешаем пользователю управлять камерой
+        camera.attachControl(this._canvas, true); 
 
 
         //--GUI--
@@ -236,11 +240,11 @@ class App {
 
         //--WHEN SCENE FINISHED LOADING--
         await scene.whenReadyAsync();
-       // scene.getMeshByName("outer").position = new Vector3(0, 3, 0);
+        //scene.getMeshByName("outer").position = new Vector3(0, 3, 0);
 
         //temporary scene objects
         var light1: HemisphericLight = new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
-        var sphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 1 }, scene);
+        //var sphere: Mesh = MeshBuilder.CreateSphere("sphere", { diameter: 1 }, scene);
         
 
         //get rid of start scene, switch to gamescene and change states
