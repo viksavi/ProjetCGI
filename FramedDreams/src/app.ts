@@ -5,6 +5,7 @@ import { Engine, Scene, Vector3, HemisphericLight, ArcRotateCamera, SceneLoader,
 import { AdvancedDynamicTexture, StackPanel, Button, TextBlock, Rectangle, Control, Image } from "@babylonjs/gui";
 import { EnvironmentMain } from "./main_scene/environment_house";
 import { Player } from "./characterController";
+import { EnvironmentScene0 } from "./scene_0/environment_scene0";
 
 enum State {START = 0, CUT_SCENE = 1, MAIN_SCENE = 2, SCENE_0 = 3}
 
@@ -17,6 +18,7 @@ class App {
     public assets;
     private _inputMap: {};
     private _environment: EnvironmentMain;
+    private _environmentScene0: EnvironmentScene0;
     private _player: Player;
 
     private _state: number = 0;
@@ -67,6 +69,11 @@ class App {
                     break;
                 case State.MAIN_SCENE:
                     this._scene.render();
+                    if (this._inputMap["KeyM"]) {
+                        this._goToScene0();
+                        console.log("M pressed");
+                        this._inputMap["KeyM"] = false; 
+                    }
                     break;
                 case State.SCENE_0:
                     this._scene.render();
@@ -316,6 +323,63 @@ class App {
          this._player = new Player(this.assets, scene, shadowGenerator); //dont have inputs yet so we dont need to pass it in
     
     }
+
+    private async _loadScene0Assets(): Promise<void> {
+        let scene = new Scene(this._engine);
+        this._scene0 = scene;
+        this._environmentScene0 = new EnvironmentScene0(scene);
+        await this._environmentScene0.load();
+    }
+
+    private async _goToScene0(): Promise<void> {
+        this._engine.displayLoadingUI();
+
+        this._scene.detachControl();
+        let scene = new Scene(this._engine);
+        scene.clearColor = new Color4(0.1, 0.1, 0.3, 1); // Зеленый цвет для SCENE_0
+        let freeCam = new FreeCamera("freeCamera", new Vector3(8.8, 13.5, -8.5), scene);
+        freeCam.setTarget(new Vector3(-1.5, 0.5, 1)); // Utilisation de 'new' pour le Vector3
+        freeCam.attachControl(this._canvas, true);
+        freeCam.inertia = 0.5;
+        freeCam.angularSensibility = 200; // Sensibilité de la caméra
+
+        // Configurer les touches de mouvement
+        freeCam.keysUp.push(90); // Z
+        freeCam.keysDown.push(83); // S
+        freeCam.keysLeft.push(81); // Q
+        freeCam.keysRight.push(68); // D
+        let parent = new TransformNode("parent", scene);
+
+        // Add some content to SCENE_0 (temporary)
+        //const sphere = MeshBuilder.CreateSphere("sphere1", { diameter: 2 }, scene);
+        try {
+            let environmentScene0 = new EnvironmentScene0(scene); // Создаем экземпляр EnvironmentScene0
+            await environmentScene0.load(); // Загружаем ресурсы
+
+            // Проверяем, что окружение загрузилось
+            if (environmentScene0.assets && environmentScene0.assets.meshes) {
+                environmentScene0.assets.meshes.forEach(mesh => {
+                	// Проверяем чтобы mes существовал
+                	if (mesh) {
+                    	mesh.parent = parent;
+                    	mesh.isPickable = false;
+                	}
+                });
+            } else {
+                console.warn("Обьекты для scene 0 загружены не были!");
+            }
+        }
+            catch (error) {
+            console.error("Error loading environment for SCENE_0:", error);
+        }
+
+        await scene.whenReadyAsync();
+        this._engine.hideLoadingUI();
+        this._scene.dispose();
+        this._scene = scene;
+        this._state = State.SCENE_0;
+    }
+
 
 }
 new App();
