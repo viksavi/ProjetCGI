@@ -4,6 +4,7 @@ import "@babylonjs/loaders/glTF";
 import { Engine, Scene, Vector3, HemisphericLight, ArcRotateCamera, SceneLoader,TransformNode, FreeCamera, Color4, Mesh, MeshBuilder, Matrix, Quaternion, PointLight, Color3, ShadowGenerator }  from "@babylonjs/core";
 import { AdvancedDynamicTexture, StackPanel, Button, TextBlock, Rectangle, Control, Image } from "@babylonjs/gui";
 import { EnvironmentMain } from "./main_scene/environment_house";
+import { Player } from "./characterController";
 
 enum State {START = 0, CUT_SCENE = 1, MAIN_SCENE = 2, SCENE_0 = 3}
 
@@ -16,6 +17,7 @@ class App {
     public assets;
     private _inputMap: {};
     private _environment: EnvironmentMain;
+    private _player: Player;
 
     private _state: number = 0;
     private _mainScene: Scene;
@@ -219,6 +221,8 @@ class App {
         const environment = new EnvironmentMain(scene);
         this._environment = environment;
         await this._environment.load();
+
+        await this._loadCharacterAssets(scene); //character
     }
 
     private async _goToMainScene(): Promise<void> {
@@ -256,6 +260,45 @@ class App {
         this._scene.attachControl();
     }
 
+    private async _loadCharacterAssets(scene): Promise<any> {
+        async function loadCharacter() {
+            //collision mesh
+            const outer = MeshBuilder.CreateBox("outer", { width: 2, depth: 1, height: 3 }, scene);
+            outer.isVisible = false;
+            outer.isPickable = false;
+            outer.checkCollisions = true;
+
+            //move origin of box collider to the bottom of the mesh (to match player mesh)
+            outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
+            //for collisions
+            outer.ellipsoid = new Vector3(1, 1.5, 1);
+            outer.ellipsoidOffset = new Vector3(0, 1.5, 0);
+
+            outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
+            
+            //--IMPORTING MESH--
+            return SceneLoader.ImportMeshAsync(null, "/", "Animation1.glb", scene).then((result) =>{
+                const root = result.meshes[0];
+                //body is our actual player mesh
+                const body = root;
+                body.parent = outer;
+                body.isPickable = false;
+                body.getChildMeshes().forEach(m => {
+                    m.isPickable = false;
+                })
+                
+                //return the mesh and animations
+                return {
+                    mesh: outer as Mesh,
+                    animationGroups: result.animationGroups
+                }
+            });
+        }
+
+        return loadCharacter().then(assets => {
+            this.assets = assets;
+        });
+    }
 
     private async _initializeGameAsync(scene): Promise<void> {
         //temporary light to light the entire scene
@@ -268,6 +311,9 @@ class App {
     
         const shadowGenerator = new ShadowGenerator(1024, light);
         shadowGenerator.darkness = 0.4;
+
+         //Create the player
+         this._player = new Player(this.assets, scene, shadowGenerator); //dont have inputs yet so we dont need to pass it in
     
     }
 
