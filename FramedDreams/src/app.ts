@@ -26,6 +26,8 @@ class App {
     private _cutScene: Scene;
     private _scene0: Scene;
 
+    private _playerData: { position: Vector3, rotation: Quaternion } | null = null;
+
     constructor() {
         this._canvas = this._createCanvas();
         this._engine = new Engine(this._canvas, true);
@@ -332,6 +334,13 @@ class App {
     }
 
     private async _goToScene0(): Promise<void> {
+        if (this._player && this._player.mesh) {
+            this._playerData = {
+                position: this._player.mesh.position.clone(),
+                rotation: this._player.mesh.rotationQuaternion?.clone() || Quaternion.Identity() // Убедитесь, что rotationQuaternion существует
+            };
+        }
+
         this._engine.displayLoadingUI();
 
         this._scene.detachControl();
@@ -351,15 +360,29 @@ class App {
         let parent = new TransformNode("parent", scene);
 
         // Add some content to SCENE_0 (temporary)
-        //const sphere = MeshBuilder.CreateSphere("sphere1", { diameter: 2 }, scene);
-        try {
-            let environmentScene0 = new EnvironmentScene0(scene); // Создаем экземпляр EnvironmentScene0
-            await environmentScene0.load(); // Загружаем ресурсы
+        await this._loadCharacterAssets(scene);
 
-            // Проверяем, что окружение загрузилось
+        var light0 = new HemisphericLight("HemiLight", new Vector3(0, 1, 0), scene);
+    
+        const light = new PointLight("sparklight", new Vector3(0, 0, 0), scene);
+        light.diffuse = new Color3(0.08627450980392157, 0.10980392156862745, 0.15294117647058825);
+        light.intensity = 35;
+        light.radius = 1;
+    
+
+        const shadowGenerator = new ShadowGenerator(1024, light);
+        shadowGenerator.darkness = 0.4;
+
+        this._player = new Player(this.assets, scene, shadowGenerator);
+
+        try {
+            let environmentScene0 = new EnvironmentScene0(scene); 
+            await environmentScene0.load();
+
+  
             if (environmentScene0.assets && environmentScene0.assets.meshes) {
                 environmentScene0.assets.meshes.forEach(mesh => {
-                	// Проверяем чтобы mes существовал
+
                 	if (mesh) {
                     	mesh.parent = parent;
                     	mesh.isPickable = false;
@@ -371,6 +394,15 @@ class App {
         }
             catch (error) {
             console.error("Error loading environment for SCENE_0:", error);
+        }
+
+        if (this._player && this._player.mesh && this._playerData) {
+            this._player.mesh.position = this._playerData.position.add(new Vector3(0, 0, 3));
+            this._player.mesh.rotationQuaternion = this._playerData.rotation;
+        }
+
+		if (this._mainScene && this._mainScene.getMeshByName("outer")) {
+            this._mainScene.getMeshByName("outer").dispose();
         }
 
         await scene.whenReadyAsync();
