@@ -8,6 +8,6 @@ export class EnvironmentMain {
     }
 
     public async load() {
-        const assets = await SceneLoader.ImportMeshAsync("", "/", "isometric_bedroom.glb", this._scene);
+        const assets = await SceneLoader.ImportMeshAsync("", "/", "kitchen_house.glb", this._scene);
     }
 }
