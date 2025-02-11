@@ -6,7 +6,7 @@ import {
     ArcRotateCamera
   } from "@babylonjs/core";
   import * as BABYLON from "babylonjs";
-  import "@babylonjs/loaders/glTF/2.0";
+  import "@babylonjs/loaders/glTF";
   import "@babylonjs/core/Helpers/sceneHelpers";
   import firstscene from "./scenes/firstscene.js";
   import testscene from "./scenes/testscene.js";
