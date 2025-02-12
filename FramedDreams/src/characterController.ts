@@ -8,15 +8,13 @@ export class Player extends TransformNode {
     //Player
     public mesh: Mesh; //outer collisionbox of player
 
-    constructor(assets, scene: Scene, shadowGenerator: ShadowGenerator, input?) {
+    constructor(assets, scene: Scene, input?) {
         super("player", scene);
         this.scene = scene;
         this._setupPlayerCamera();
 
         this.mesh = assets.mesh;
         this.mesh.parent = this;
-
-        shadowGenerator.addShadowCaster(assets.mesh); //the player mesh will cast shadows
 
         this._input = input; //inputs we will get from inputController.ts
 
