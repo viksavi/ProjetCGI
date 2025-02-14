@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, Color3, TransformNode, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
 import { Environment } from "./environment";
 
 export class EnvironmentMain extends Environment {
@@ -13,7 +13,7 @@ export class EnvironmentMain extends Environment {
                 meshes: result.meshes,
                 animationGroups: result.animationGroups,
             };
-            this.addEnvironemntSkyBox();
+            //this.addEnvironemntSkyBox();
         } catch (e) {
             console.error("Error loading house environment:", e);
         }
@@ -27,8 +27,11 @@ export class EnvironmentMain extends Environment {
                     mesh.material.reflectionTexture = null; 
                     mesh.material.environmentIntensity = 0; 
                 }
+                mesh.showBoundingBox = true;
+                const boundingInfo = mesh.getBoundingInfo();
             }
         });
+        
     }
 
     private addEnvironemntSkyBox(): void {
