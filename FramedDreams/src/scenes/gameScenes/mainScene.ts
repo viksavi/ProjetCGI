@@ -1,5 +1,5 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, Color4, Mesh, MeshBuilder, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3 } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, Color4, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentMain } from "../../environments/environmentMain";
 
@@ -28,22 +28,27 @@ export class MainScene extends AbstractModelScene {
         this._pointLight.specular = new Color3(1, 1, 1);
 
         this._scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098);
-        let freeCam = new FreeCamera("freeCamera", new Vector3(-6.43, 1.25, 10), this._scene);
-        freeCam.setTarget(new Vector3(-1.5, 0.5, 1));
-        freeCam.attachControl(this._engine.getRenderingCanvas(), true);
-        freeCam.inertia = 0.5;
-        freeCam.angularSensibility = 200;
+        let camera = new UniversalCamera("camera1", new Vector3(0, 2, 8), this._scene);
+        camera.setTarget(new Vector3(0, 2, 10));
+        camera.speed = 0.2;
+        camera.inertia = 0.5; 
+        camera.attachControl(true);
 
-        this._scene.activeCamera = freeCam;
-
-        freeCam.keysUp.push(90);
-        freeCam.keysDown.push(83);
-        freeCam.keysLeft.push(81);
-        freeCam.keysRight.push(68);
+        this._scene.activeCamera = camera;
+        const assumedFramesPerSecond = 60;
+        const earthGravity = -9.81;
+        //this._scene.gravity = new Vector3(0, earthGravity / assumedFramesPerSecond, 0);
+        /*camera.applyGravity = true;
+        //camera.ellipsoid = new Vector3(1, 1, 1);
+        camera.ellipsoid = new Vector3(1, 2, 1); 
+        camera.ellipsoidOffset = new Vector3(0, 1, 0); 
+        this._scene.collisionsEnabled = true;
+        camera.checkCollisions = true;*/
         
         await this.environment.load();
         await this._loadCharacterAssets();
 
+        this.environment.enableCollisions();
     }
 
     protected async _loadCharacterAssets(): Promise<any> {
@@ -93,5 +98,7 @@ export class MainScene extends AbstractModelScene {
     public goToScene0() {
         this._goToScene0();
     }
+
+    private add
 
 }

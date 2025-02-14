@@ -30,7 +30,7 @@ class App {
         // hide/show the Inspector
         window.addEventListener("keydown", (ev) => {
             // Shift+Ctrl+Alt+I
-            if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73) {
+            if (ev.shiftKey && ev.ctrlKey && ev.altKey) {
                 if (this._scene.getScene().debugLayer.isVisible()) {
                     this._scene.getScene().debugLayer.hide();
                 } else {
@@ -57,6 +57,7 @@ class App {
         this._engine.runRenderLoop(() => {
             if (this._scene) {
                 this._scene.getScene().render();
+                //this._scene.getScene().activeCamera.onColl
 
                 if (this._state === State.MAIN_SCENE && this._inputMap["KeyM"]) {
                     this._goToScene0();
