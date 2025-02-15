@@ -43,6 +43,7 @@ export class MainScene extends AbstractModelScene {
         camera.ellipsoid = new Vector3(0.5, 1, 0.5);
         camera.ellipsoidOffset = new Vector3(0, 0.7, 0);
         camera.minZ = 0.2;
+        (camera as any).slopFactor = 0.5;
 
         this._scene.collisionsEnabled = true;
         camera.checkCollisions = true;

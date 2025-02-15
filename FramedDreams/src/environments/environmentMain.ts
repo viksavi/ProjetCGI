@@ -21,14 +21,18 @@ export class EnvironmentMain extends Environment {
 
     public enableCollisions(): void {
         this.assets.meshes.forEach((mesh) => {
-            if (!mesh.name.toLowerCase().includes("door")) { 
+            if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02" || mesh.name.toLowerCase().includes("door")) { 
+                mesh.checkCollisions = false; 
+            } else {
                 mesh.checkCollisions = true;
-                if(mesh.material) {
+                if (mesh.material) {
                     mesh.material.reflectionTexture = null; 
                     mesh.material.environmentIntensity = 0; 
                 }
-                mesh.showBoundingBox = true;
-                const boundingInfo = mesh.getBoundingInfo();
+                //mesh.showBoundingBox = true;
+                if (mesh.name.includes("Collision")) {
+                    mesh.isVisible = false;
+                }
             }
         });
         
