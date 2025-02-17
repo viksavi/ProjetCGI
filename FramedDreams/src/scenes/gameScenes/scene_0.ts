@@ -10,7 +10,9 @@ export class Scene0 extends AbstractModelScene {
     private _hemiLight: HemisphericLight;
     private _direcLight: DirectionalLight;
     private _walkAnimation: AnimationGroup | undefined;
-    private _walkSpeed: number = 0.01; // Vitesse de déplacement
+    private _runAnimation: AnimationGroup | undefined;
+    private _idleAnimation: AnimationGroup | undefined;
+    private _walkSpeed: number = 0.04;
 
     constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
         super(engine);
@@ -55,6 +57,8 @@ export class Scene0 extends AbstractModelScene {
             // Créer le joueur avec les paramètres
             this.player = this.createPlayer(playerParams);
             this._walkAnimation = this.assets.animationGroups.find(ag => ag.name === "walk");
+            this._runAnimation = this.assets.animationGroups.find(ag => ag.name === "run");
+            this._idleAnimation = this.assets.animationGroups.find(ag => ag.name === "idle");
 
             // Ajout pour le débogage :
             console.log("Position initiale du joueur :", this.player.position);
@@ -89,7 +93,7 @@ export class Scene0 extends AbstractModelScene {
             outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
 
             //--IMPORTING MESH--
-            return SceneLoader.ImportMeshAsync(null, "/", "astronaute.glb", this._scene).then((result) => {
+            return SceneLoader.ImportMeshAsync(null, "/", "lostronaut.glb", this._scene).then((result) => {
                 const root = result.meshes[0];
                 //body is our actual player mesh
                 const body = root;
@@ -116,14 +120,38 @@ export class Scene0 extends AbstractModelScene {
         // ActionManager pour la gestion des événements clavier
         this._scene.actionManager = new ActionManager(this._scene);
 
-        // Action pour démarrer l'animation "walk" et le déplacement
+        // Action pour démarrer l'animation "walk" et le déplacement vers l'arrière
         this._scene.actionManager.registerAction(
             new ExecuteCodeAction(
-                { trigger: ActionManager.OnKeyDownTrigger, parameter: 'w' }, // Touche "w" (peut être modifiée)
+                { trigger: ActionManager.OnKeyDownTrigger, parameter: 'g' }, // Touche "s" (peut être modifiée)
                 () => {
                     if (this._walkAnimation) {
                         this._walkAnimation.start(true); // Démarrer l'animation en boucle
-                        this._moveCharacter(); // Déclencher le déplacement du personnage
+                        this._moveCharacterBack(); // Déclencher le déplacement du personnage
+                    }
+                }
+            )
+        );
+        this._scene.actionManager.registerAction(
+            new ExecuteCodeAction(
+                { trigger: ActionManager.OnKeyUpTrigger, parameter: 'g' },
+                () => {
+                    if (this._walkAnimation) {
+                        this._walkAnimation.stop();
+                    }
+                    
+                }
+            )
+        );
+
+        // Action pour démarrer l'animation "walk" et le déplacement vers l'avant
+        this._scene.actionManager.registerAction(
+            new ExecuteCodeAction(
+                { trigger: ActionManager.OnKeyDownTrigger, parameter: 't' },
+                () => {
+                    if (this._walkAnimation) {
+                        this._walkAnimation.start(true); // Démarrer l'animation en boucle
+                        this._moveCharacterFront(); // Déclencher le déplacement du personnage
                     }
                 }
             )
@@ -132,7 +160,7 @@ export class Scene0 extends AbstractModelScene {
         // Action pour arrêter l'animation et le déplacement
         this._scene.actionManager.registerAction(
             new ExecuteCodeAction(
-                { trigger: ActionManager.OnKeyUpTrigger, parameter: 'w' }, // Touche "w" relâchée
+                { trigger: ActionManager.OnKeyUpTrigger, parameter: 't' },
                 () => {
                     if (this._walkAnimation) {
                         this._walkAnimation.stop();
@@ -140,12 +168,80 @@ export class Scene0 extends AbstractModelScene {
                 }
             )
         );
+
+        // Action pour démarrer l'animation "walk" et le déplacement vers la droite
+        this._scene.actionManager.registerAction(
+            new ExecuteCodeAction(
+                { trigger: ActionManager.OnKeyDownTrigger, parameter: 'f' },
+                () => {
+                    if (this._walkAnimation) {
+                        this._walkAnimation.start(true); // Démarrer l'animation en boucle
+                        this._moveCharacterLeft(); // Déclencher le déplacement du personnage
+                    }
+                }
+            )
+        );
+            // Action pour arrêter l'animation et le déplacement
+            this._scene.actionManager.registerAction(
+                new ExecuteCodeAction(
+                    { trigger: ActionManager.OnKeyUpTrigger, parameter: 'f' },
+                    () => {
+                        if (this._walkAnimation) {
+                            this._walkAnimation.stop();
+                        }
+                    }
+                )
+            );
+
+        // Action pour démarrer l'animation "walk" et le déplacement vers la gauche 
+        this._scene.actionManager.registerAction(
+            new ExecuteCodeAction(
+                { trigger: ActionManager.OnKeyDownTrigger, parameter: 'h' },
+                () => {
+                    if (this._walkAnimation) {
+                        this._walkAnimation.start(true); // Démarrer l'animation en boucle
+                        this._moveCharacterRight(); // Déclencher le déplacement du personnage
+                    }
+                }
+            )
+        );
+        // Action pour arrêter l'animation et le déplacement
+        this._scene.actionManager.registerAction(
+            new ExecuteCodeAction(
+                { trigger: ActionManager.OnKeyUpTrigger, parameter: 'h' },
+                () => {
+                    if (this._walkAnimation) {
+                        this._walkAnimation.stop();
+                    }
+                }
+            )
+        );
+
+
     }
 
     //Fonction de deplacement du personnage
-    private _moveCharacter(): void {
+    private _moveCharacterFront(): void {
         // Déplacer le mesh du personnage vers l'avant
-        this.player.mesh.position.z += this._walkSpeed *2,5;
+        this.player.mesh.position.z += this._walkSpeed;
+        console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
+    }
+    private _moveCharacterBack(): void { 
+        // Déplacer le mesh du personnage vers l'arrière
+        this.player.mesh.position.z -= this._walkSpeed;
+        this.player.mesh.rotation.y = Math.PI;
+        console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
+    }
+    private _moveCharacterLeft(): void { 
+        // Déplacer le mesh du personnage vers la gauche
+        this.player.mesh.position.x -= this._walkSpeed;
+        this.player.mesh.rotation.y = Math.PI / 2;
+        console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
+    }
+    private _moveCharacterRight(): void { 
+        // Déplacer le mesh du personnage vers la droite
+        this.player.mesh.position.x += this._walkSpeed;
+        this.player.mesh.rotation.y = -Math.PI / 2;
         console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
     }
 
