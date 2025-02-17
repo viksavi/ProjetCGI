@@ -1,5 +1,5 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, Color4, CannonJSPlugin, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, Color4, CannonJSPlugin, Ray, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentMain } from "../../environments/environmentMain";
 
@@ -30,7 +30,7 @@ export class MainScene extends AbstractModelScene {
         this._scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098);
         let camera = new UniversalCamera("camera1", new Vector3(-1, 1.5, 8), this._scene);
         camera.setTarget(new Vector3(0, 2, 10));
-        camera.speed = 0.2;
+        camera.speed = 0.6;
         camera.inertia = 0.5; 
         camera.attachControl(true);
 
@@ -42,8 +42,8 @@ export class MainScene extends AbstractModelScene {
         camera.applyGravity = true;
         camera.ellipsoid = new Vector3(0.5, 1, 0.5);
         camera.ellipsoidOffset = new Vector3(0, 0.7, 0);
-        camera.minZ = 0.2;
-        (camera as any).slopFactor = 0.5;
+        camera.minZ = 0.45;
+        (camera as any).slopFactor = 1.5;
 
         this._scene.collisionsEnabled = true;
         camera.checkCollisions = true;
@@ -100,6 +100,21 @@ export class MainScene extends AbstractModelScene {
 
     public goToScene0() {
         this._goToScene0();
+    }
+
+    public stairsCollision(): void {
+        const camera = this._scene.activeCamera;
+        const mesh1 = this._scene.getMeshByName("Collision_1.015");
+        const mesh2 = this._scene.getMeshByName("Floor_10.001");
+
+        if (camera && camera.position.y >= 3) {
+            mesh1.checkCollisions = true;
+            mesh2.checkCollisions = true;
+        } else if(camera && camera.position.y < 3) {
+            mesh1.checkCollisions = false;
+            mesh2.checkCollisions = false;
+            mesh1.isVisible = false;
+        }
     }
 
 }

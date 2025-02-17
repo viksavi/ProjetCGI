@@ -57,8 +57,9 @@ class App {
         this._engine.runRenderLoop(() => {
             if (this._scene) {
                 this._scene.getScene().render();
-                //this._scene.getScene().activeCamera.onColl
-
+                if(this._state === State.MAIN_SCENE) {
+                    (this._scene as MainScene).stairsCollision();
+                }
                 if (this._state === State.MAIN_SCENE && this._inputMap["KeyM"]) {
                     this._goToScene0();
                     this._inputMap["KeyM"] = false;
