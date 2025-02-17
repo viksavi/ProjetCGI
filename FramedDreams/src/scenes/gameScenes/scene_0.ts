@@ -89,7 +89,7 @@ export class Scene0 extends AbstractModelScene {
             outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
 
             //--IMPORTING MESH--
-            return SceneLoader.ImportMeshAsync(null, "/", "astronaute.glb", this._scene).then((result) => {
+            return SceneLoader.ImportMeshAsync(null, "/", "lostronaut.glb", this._scene).then((result) => {
                 const root = result.meshes[0];
                 //body is our actual player mesh
                 const body = root;
@@ -115,6 +115,7 @@ export class Scene0 extends AbstractModelScene {
     private _setupInput(): void {
         // ActionManager pour la gestion des événements clavier
         this._scene.actionManager = new ActionManager(this._scene);
+
 
         // Action pour démarrer l'animation "walk" et le déplacement
         this._scene.actionManager.registerAction(
