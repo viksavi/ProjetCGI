@@ -1,6 +1,6 @@
 import { Scene, ActionManager, ExecuteCodeAction, Scalar } from "@babylonjs/core";
 
-export class PlayerInput {
+export class SimpleInput {
     public inputMap: any;
 
     //simple movement
@@ -27,29 +27,25 @@ export class PlayerInput {
     }
 
     private _updateFromKeyboard(): void {
-        if (this.inputMap["ArrowUp"]) {
-            this.vertical = Scalar.Lerp(this.vertical, 1, 0.2);
+        if (this.inputMap["t"]) {
+            this.vertical = -1 //Scalar.Lerp(this.vertical, 1, 0.2);
             this.verticalAxis = 1;
     
-        } else if (this.inputMap["ArrowDown"]) {
-            this.vertical = Scalar.Lerp(this.vertical, -1, 0.2);
+        } else if (this.inputMap["g"]) {
+            this.vertical = 1; //Scalar.Lerp(this.vertical, -1, 0.2);
             this.verticalAxis = -1;
         } else {
             this.vertical = 0;
             this.verticalAxis = 0;
         }
     
-        if (this.inputMap["ArrowLeft"]) {
-            this.horizontal = Scalar.Lerp(this.horizontal, -1, 0.2);
+        if (this.inputMap["f"]) {
+            this.horizontal = 0;//Scalar.Lerp(this.horizontal, -1, 0.2);
             this.horizontalAxis = -1;
     
-        } else if (this.inputMap["ArrowRight"]) {
-            this.horizontal = Scalar.Lerp(this.horizontal, 1, 0.2);
+        } else if (this.inputMap["h"]) {
+            this.horizontal = 0; //Scalar.Lerp(this.horizontal, 1, 0.2);
             this.horizontalAxis = 1;
-        }
-        else {
-            this.horizontal = 0;
-            this.horizontalAxis = 0;
         }
     }
 }

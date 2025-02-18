@@ -1,7 +1,8 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, Color4, Mesh, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { Matrix, MeshBuilder, FreeCamera, Engine, Vector3, Color4, Mesh, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ShadowGenerator, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
+import { SimpleInput } from "../../inputController";
 
 export class Scene0 extends AbstractModelScene {
     public environment: EnvironmentScene0 = new EnvironmentScene0(this._scene);
@@ -9,10 +10,10 @@ export class Scene0 extends AbstractModelScene {
     public assets: any;
     private _hemiLight: HemisphericLight;
     private _direcLight: DirectionalLight;
-    private _walkAnimation: AnimationGroup | undefined;
-    private _runAnimation: AnimationGroup | undefined;
-    private _idleAnimation: AnimationGroup | undefined;
-    private _walkSpeed: number = 0.04;
+
+    private _shadowGenerator: ShadowGenerator;
+
+    private _input: SimpleInput;
 
     constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
         super(engine);
@@ -35,6 +36,117 @@ export class Scene0 extends AbstractModelScene {
         freeCam.keysDown.push(83);
         freeCam.keysLeft.push(81);
         freeCam.keysRight.push(68);
+
+        // Lumières
+        this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
+        this._hemiLight.intensity = 1;
+
+        this._direcLight = new DirectionalLight("direcLight", new Vector3(12, 13, -4), this._scene);
+        this._direcLight.intensity = 1.5;
+
+        this._shadowGenerator = new ShadowGenerator(1024, this._direcLight);
+        this._shadowGenerator.useBlurExponentialShadowMap = true;
+        this._shadowGenerator.blurKernel = 32;
+
+        await this.environment.load();
+        await this._loadCharacterAssets();
+
+        /*
+        this._walkAnimation = this.assets.animationGroups.find(ag => ag.name === "walk");
+        this._runAnimation = this.assets.animationGroups.find(ag => ag.name === "run");
+        this._idleAnimation = this.assets.animationGroups.find(ag => ag.name === "idle");
+        */
+
+        // Création et positionnement du joueur APRES le chargement des assets
+        if (this.assets && this.assets.mesh && this.assets.animationGroups) {
+            //input
+            this._input = new SimpleInput(this._scene);
+
+            // Créer le joueur avec les paramètres
+            this.player = this.createPlayer(this.assets, this._shadowGenerator, this._input);
+
+            //Activer camera
+            this.player.activatePlayerCamera();
+
+            // Ajout pour le débogage :
+            console.log("Position initiale du joueur :", this.player.position);
+            console.log("Echelle du joueur :", this.player.scaling);
+        } else {
+            console.warn("Erreur: Assets du personnage non chargés correctement.");
+        }
+    }
+
+    //Fonction qui permet de créer le player
+    private createPlayer(assets, shadowGenerator: ShadowGenerator, input: SimpleInput): Player {
+        const player = new Player(assets, this._scene, shadowGenerator, input);
+        return player;
+    }
+
+    protected async _loadCharacterAssets(): Promise<void> {
+        const loadCharacter = async () => {
+            //collision mesh
+            const outer = MeshBuilder.CreateBox("outer", { width: 2, depth: 1, height: 3 }, this._scene);
+            outer.isVisible = false;
+            outer.isPickable = false;
+            outer.checkCollisions = true;
+
+            //move origin of box collider to the bottom of the mesh (to match player mesh)
+            outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
+            //for collisions
+            outer.ellipsoid = new Vector3(1, 1.5, 1);
+            outer.ellipsoidOffset = new Vector3(0, 1.5, 0);
+
+            outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
+
+            //--IMPORTING MESH--
+            return SceneLoader.ImportMeshAsync(null, "/", "lostronaut.glb", this._scene).then((result) => {
+                const root = result.meshes[0];
+                //body is our actual player mesh
+                const body = root;
+                body.scaling = new Vector3(13, 13, 13),
+                body.position = new Vector3(2.3, 0, 2);
+                body.parent = outer;
+                body.isPickable = false;
+                body.getChildMeshes().forEach(m => {
+                    m.isPickable = false;
+                })
+
+                //return the mesh and animations
+                return {
+                    mesh: outer as Mesh,
+                    animationGroups: result.animationGroups
+                };
+            });
+        }
+
+        this.assets = await loadCharacter(); // Assignation directe des assets
+    }
+
+    public dispose(): void {
+        this._scene.dispose();
+    }
+}
+/*
+
+export class Scene0 extends AbstractModelScene {
+    public environment: EnvironmentScene0 = new EnvironmentScene0(this._scene);
+    public player: Player;
+    public assets: any;
+    private _hemiLight: HemisphericLight;
+    private _direcLight: DirectionalLight;
+    private _walkAnimation: AnimationGroup | undefined;
+    private _runAnimation: AnimationGroup | undefined;
+    private _idleAnimation: AnimationGroup | undefined;
+    private _walkSpeed: number = 0.04;
+
+    constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
+        super(engine);
+        this._playerData = playerData;
+    }
+
+    private _playerData: { position: Vector3, rotation: Quaternion } | null;
+
+    public async load(): Promise<void> {
 
         this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
         this._hemiLight.intensity = 1;
@@ -229,23 +341,24 @@ export class Scene0 extends AbstractModelScene {
     private _moveCharacterBack(): void { 
         // Déplacer le mesh du personnage vers l'arrière
         this.player.mesh.position.z -= this._walkSpeed;
-        this.player.mesh.rotation.y = Math.PI;
+        this.player.rotation.y = Math.PI;
         console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
     }
     private _moveCharacterLeft(): void { 
         // Déplacer le mesh du personnage vers la gauche
         this.player.mesh.position.x -= this._walkSpeed;
-        this.player.mesh.rotation.y = Math.PI / 2;
+        this.player.rotation.y = Math.PI / 2;
         console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
     }
     private _moveCharacterRight(): void { 
         // Déplacer le mesh du personnage vers la droite
         this.player.mesh.position.x += this._walkSpeed;
-        this.player.mesh.rotation.y = -Math.PI / 2;
+        this.player.rotation.y = -Math.PI / 2;
+        this.player.position
         console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
     }
 
     public dispose(): void {
         this._scene.dispose();
     }
-}
+}*/
