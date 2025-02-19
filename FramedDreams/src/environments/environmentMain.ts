@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
 import { Environment } from "./environment";
 
 export class EnvironmentMain extends Environment {
@@ -13,7 +13,7 @@ export class EnvironmentMain extends Environment {
                 meshes: result.meshes,
                 animationGroups: result.animationGroups,
             };
-            //this.addEnvironemntSkyBox();
+            this.addEnvironemntSkyBox();
         } catch (e) {
             console.error("Error loading house environment:", e);
         }
@@ -29,7 +29,6 @@ export class EnvironmentMain extends Environment {
                     mesh.material.reflectionTexture = null; 
                     mesh.material.environmentIntensity = 0; 
                 }
-                //mesh.showBoundingBox = true;
                 if (mesh.name.includes("Collision")) {
                     mesh.isVisible = false;
                 }
@@ -39,8 +38,8 @@ export class EnvironmentMain extends Environment {
     }
 
     private addEnvironemntSkyBox(): void {
-        const hdrTexture = new HDRCubeTexture("/meadow_2_2k.hdr", this._scene, 512);
-    	this._scene.environmentTexture = hdrTexture;
+        const hdrTexture = new CubeTexture("/blue_sky.env", this._scene); 
+        this._scene.environmentTexture = hdrTexture;
         const skybox = MeshBuilder.CreateBox("skyBox", { size: 1000 }, this._scene);
         const skyboxMaterial = new StandardMaterial("skyBoxMaterial", this._scene);
         skyboxMaterial.backFaceCulling = false;
@@ -49,7 +48,8 @@ export class EnvironmentMain extends Environment {
         skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
         skyboxMaterial.specularColor = new Color3(0, 0, 0);
         skybox.material = skyboxMaterial;
-        this._scene.environmentIntensity = 0.1;
+        skybox.infiniteDistance = true;
+        this._scene.environmentIntensity = 0.5;
     }
     
 }
