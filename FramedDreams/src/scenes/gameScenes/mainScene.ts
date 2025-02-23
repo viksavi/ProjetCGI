@@ -1,37 +1,34 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, Color4, CannonJSPlugin, Ray, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, SpotLight, Material,PBRMetallicRoughnessMaterial, GlowLayer, ShadowGenerator,  Color4, CannonJSPlugin, Ray, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentMain } from "../../environments/environmentMain";
+import {Light} from "../../house/light";
 
 export class MainScene extends AbstractModelScene { 
     public environment: EnvironmentMain = new EnvironmentMain(this._scene);
     public player: Player;
     public assets: any;
-    private _hemiLight: HemisphericLight;
-    private _pointLight: PointLight;
+    private _sceneReady: boolean = false;
+    private _light: Light;
 
     constructor(engine: Engine, goToScene0: () => void) {
         super(engine);
         this._goToScene0 = goToScene0; 
+
+        this._scene.onBeforeRenderObservable.add(() => {
+            this.stairsCollision();
+        });
     }
 
     private _goToScene0: () => void; //dependency injection
 
     public async load(): Promise<any> {
-        
-        this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
-        this._hemiLight.intensity = 0.7;
-
-        this._pointLight = new PointLight("pointLight", new Vector3(0, 5, 0), this._scene);
-        this._pointLight.intensity = 50;
-        this._pointLight.diffuse = new Color3(1, 1, 1);
-        this._pointLight.specular = new Color3(1, 1, 1);
-
         this._scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098);
         let camera = new UniversalCamera("camera1", new Vector3(-1, 1.5, 8), this._scene);
         camera.setTarget(new Vector3(0, 2, 10));
         camera.speed = 0.6;
         camera.inertia = 0.5; 
+        camera.angularSensibility = 2000;
         camera.attachControl(true);
 
         this._scene.activeCamera = camera;
@@ -50,8 +47,9 @@ export class MainScene extends AbstractModelScene {
         
         await this.environment.load();
         await this._loadCharacterAssets();
-
         this.environment.enableCollisions();
+        this._light = new Light(this._scene);
+        this._onSceneReady();
     }
 
     protected async _loadCharacterAssets(): Promise<any> {
@@ -102,18 +100,28 @@ export class MainScene extends AbstractModelScene {
         this._goToScene0();
     }
 
-    public stairsCollision(): void {
+    private _onSceneReady(): void {
+        this._sceneReady = true;
+        this._scene.onBeforeRenderObservable.add(() => {
+            this.stairsCollision();
+            console.log("scene ready");
+        });
+        this._light.toggleLight();
+    }
+
+    private stairsCollision(): void {
         const camera = this._scene.activeCamera;
         const mesh1 = this._scene.getMeshByName("Collision_1.015");
         const mesh2 = this._scene.getMeshByName("Floor_10.001");
-
-        if (camera && camera.position.y >= 3) {
-            mesh1.checkCollisions = true;
-            mesh2.checkCollisions = true;
-        } else if(camera && camera.position.y < 3) {
-            mesh1.checkCollisions = false;
-            mesh2.checkCollisions = false;
-            mesh1.isVisible = false;
+        if(mesh1 && mesh2) {
+            if (camera && camera.position.y >= 3) {
+                mesh1.checkCollisions = true;
+                mesh2.checkCollisions = true;
+            } else if(camera && camera.position.y < 3) {
+                mesh1.checkCollisions = false;
+                mesh2.checkCollisions = false;
+                mesh1.isVisible = false;
+            }
         }
     }
 

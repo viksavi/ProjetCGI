@@ -13,7 +13,7 @@ export class EnvironmentMain extends Environment {
                 meshes: result.meshes,
                 animationGroups: result.animationGroups,
             };
-            this.addEnvironemntSkyBox();
+            this.addEnvironmentSkyBox();
         } catch (e) {
             console.error("Error loading house environment:", e);
         }
@@ -21,7 +21,8 @@ export class EnvironmentMain extends Environment {
 
     public enableCollisions(): void {
         this.assets.meshes.forEach((mesh) => {
-            if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02" || mesh.name.toLowerCase().includes("door")) { 
+            if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02" || mesh.name.toLowerCase().includes("door")
+            || mesh.name === "Room1") { 
                 mesh.checkCollisions = false; 
             } else {
                 mesh.checkCollisions = true;
@@ -37,7 +38,7 @@ export class EnvironmentMain extends Environment {
         
     }
 
-    private addEnvironemntSkyBox(): void {
+    private addEnvironmentSkyBox(): void {
         const hdrTexture = new CubeTexture("/blue_sky.env", this._scene); 
         this._scene.environmentTexture = hdrTexture;
         const skybox = MeshBuilder.CreateBox("skyBox", { size: 1000 }, this._scene);
