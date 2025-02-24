@@ -21,8 +21,7 @@ export class EnvironmentMain extends Environment {
 
     public enableCollisions(): void {
         this.assets.meshes.forEach((mesh) => {
-            if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02" || mesh.name.toLowerCase().includes("door")
-            || mesh.name === "Room1") { 
+            if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02") { 
                 mesh.checkCollisions = false; 
             } else {
                 mesh.checkCollisions = true;

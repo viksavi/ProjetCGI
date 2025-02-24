@@ -1,23 +1,19 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, SpotLight, Material,PBRMetallicRoughnessMaterial, GlowLayer, ShadowGenerator,  Color4, CannonJSPlugin, Ray, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, TransformNode,Tools, SpotLight, Material,PBRMetallicRoughnessMaterial, GlowLayer, ShadowGenerator,  Color4, CannonJSPlugin, Ray, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentMain } from "../../environments/environmentMain";
-import {Light} from "../../house/light";
+import { House } from "../../house/house";
 
 export class MainScene extends AbstractModelScene { 
     public environment: EnvironmentMain = new EnvironmentMain(this._scene);
     public player: Player;
     public assets: any;
     private _sceneReady: boolean = false;
-    private _light: Light;
+    private _house: House;
 
     constructor(engine: Engine, goToScene0: () => void) {
         super(engine);
-        this._goToScene0 = goToScene0; 
-
-        this._scene.onBeforeRenderObservable.add(() => {
-            this.stairsCollision();
-        });
+        this._goToScene0 = goToScene0;
     }
 
     private _goToScene0: () => void; //dependency injection
@@ -37,7 +33,7 @@ export class MainScene extends AbstractModelScene {
         const earthGravity = -9.81;
         this._scene.gravity = new Vector3(0, earthGravity / assumedFramesPerSecond, 0);
         camera.applyGravity = true;
-        camera.ellipsoid = new Vector3(0.5, 1, 0.5);
+        camera.ellipsoid = new Vector3(0.4, 1, 0.4);
         camera.ellipsoidOffset = new Vector3(0, 0.7, 0);
         camera.minZ = 0.45;
         (camera as any).slopFactor = 1.5;
@@ -48,7 +44,7 @@ export class MainScene extends AbstractModelScene {
         await this.environment.load();
         await this._loadCharacterAssets();
         this.environment.enableCollisions();
-        this._light = new Light(this._scene);
+        this._house = new House(this._scene);
         this._onSceneReady();
     }
 
@@ -106,7 +102,7 @@ export class MainScene extends AbstractModelScene {
             this.stairsCollision();
             console.log("scene ready");
         });
-        this._light.toggleLight();
+        this._house.onPointerDownEvts();
     }
 
     private stairsCollision(): void {
@@ -124,5 +120,4 @@ export class MainScene extends AbstractModelScene {
             }
         }
     }
-
 }

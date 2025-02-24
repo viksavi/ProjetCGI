@@ -1,9 +1,9 @@
 import { Scene, Mesh, Vector3,HemisphericLight, Color3,Material, GlowLayer, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture, PBRMetallicRoughnessMaterial } from "@babylonjs/core";
 
 export class Light {
-    public _scene: Scene;
-    public switches: Mesh[] = [];
-    public lightOn: boolean = true;
+    private _scene: Scene;
+    private _switches: Mesh[] = [];
+    private _lightOn: boolean = true;
     private _glowLayer: GlowLayer;
     private _origMaterial: Material;
     private _hemiLight: HemisphericLight;
@@ -18,28 +18,20 @@ export class Light {
         this._hemiLight.diffuse = new Color3(0.82, 0.81, 0.78); 
     }
 
+    public getSwitches(): Mesh[] {
+        return this._switches;
+    }
+
     private findSwitches(): void {
         this._scene.meshes.forEach(mesh => {
             if (mesh.name.includes("OBJ_SwitchLight")) {
-                this.switches.push(mesh as Mesh);
+                this._switches.push(mesh as Mesh);
             }
         });
     }
 
-    public toggleLight(): void {
-        this._scene.onPointerDown = (evt, pickInfo) => {
-            if (pickInfo.hit) {
-                const pickedMesh = pickInfo.pickedMesh;
-        
-                if (pickedMesh && this.switches.some(mesh => mesh === pickedMesh)) { 
-                    this.changeLightState(pickedMesh);
-                }
-            }
-        };
-    }
-
-    private changeLightState(meshSwitch): void {
-        if(!this.lightOn) {
+    public changeLightState(meshSwitch): void {
+        if(!this._lightOn) {
             if(this._glowLayer) {
                 this._glowLayer.dispose();
                 this._glowLayer = null;
@@ -47,7 +39,7 @@ export class Light {
                 meshSwitch.material = this._origMaterial;
             }
             this._hemiLight.setEnabled(true);
-            this.lightOn = true;
+            this._lightOn = true;
             const lamp1 = this._scene.getMeshByName("OBJ_Light_01");
         } else {
             this._hemiLight.setEnabled(false);
@@ -56,7 +48,7 @@ export class Light {
             this._glowLayer.intensity = 0.01; 
             material.emissiveColor = new Color3(0.8, 0.8, 0.8); 
             meshSwitch.material = material;
-            this.lightOn = false;
+            this._lightOn = false;
         } 
     }
 
