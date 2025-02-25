@@ -44,7 +44,7 @@ export class MainScene extends AbstractModelScene {
         await this.environment.load();
         await this._loadCharacterAssets();
         this.environment.enableCollisions();
-        this._house = new House(this._scene);
+        this._house = new House(this._scene, camera, this._goToScene0);
         this._onSceneReady();
     }
 

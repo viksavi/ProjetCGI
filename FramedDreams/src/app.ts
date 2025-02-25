@@ -57,11 +57,6 @@ class App {
         this._engine.runRenderLoop(() => {
             if (this._scene) {
                 this._scene.getScene().render();
-                
-                if (this._state === State.MAIN_SCENE && this._inputMap["KeyM"]) {
-                    this._goToScene0();
-                    this._inputMap["KeyM"] = false;
-                }
             }
         });
     

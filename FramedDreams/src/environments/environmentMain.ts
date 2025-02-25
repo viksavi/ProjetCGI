@@ -19,6 +19,8 @@ export class EnvironmentMain extends Environment {
         }
     }
 
+
+
     public enableCollisions(): void {
         this.assets.meshes.forEach((mesh) => {
             if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02") { 
@@ -29,7 +31,7 @@ export class EnvironmentMain extends Environment {
                     mesh.material.reflectionTexture = null; 
                     mesh.material.environmentIntensity = 0; 
                 }
-                if (mesh.name.includes("Collision")) {
+                if (mesh.name.includes("Collision") || mesh.name === "Martian_tableau") {
                     mesh.isVisible = false;
                 }
             }
