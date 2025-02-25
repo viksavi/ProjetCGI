@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, Color3, TransformNode, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
 import { Environment } from "./environment";
 
 export class EnvironmentMain extends Environment {
@@ -13,27 +13,35 @@ export class EnvironmentMain extends Environment {
                 meshes: result.meshes,
                 animationGroups: result.animationGroups,
             };
-            this.addEnvironemntSkyBox();
+            this.addEnvironmentSkyBox();
         } catch (e) {
             console.error("Error loading house environment:", e);
         }
     }
 
+
+
     public enableCollisions(): void {
         this.assets.meshes.forEach((mesh) => {
-            if (!mesh.name.toLowerCase().includes("door")) { 
+            if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02") { 
+                mesh.checkCollisions = false; 
+            } else {
                 mesh.checkCollisions = true;
-                if(mesh.material) {
+                if (mesh.material) {
                     mesh.material.reflectionTexture = null; 
                     mesh.material.environmentIntensity = 0; 
                 }
+                if (mesh.name.includes("Collision") || mesh.name === "Martian_tableau") {
+                    mesh.isVisible = false;
+                }
             }
         });
+        
     }
 
-    private addEnvironemntSkyBox(): void {
-        const hdrTexture = new HDRCubeTexture("/meadow_2_2k.hdr", this._scene, 512);
-    	this._scene.environmentTexture = hdrTexture;
+    private addEnvironmentSkyBox(): void {
+        const hdrTexture = new CubeTexture("/blue_sky.env", this._scene); 
+        this._scene.environmentTexture = hdrTexture;
         const skybox = MeshBuilder.CreateBox("skyBox", { size: 1000 }, this._scene);
         const skyboxMaterial = new StandardMaterial("skyBoxMaterial", this._scene);
         skyboxMaterial.backFaceCulling = false;
@@ -42,7 +50,8 @@ export class EnvironmentMain extends Environment {
         skyboxMaterial.diffuseColor = new Color3(0, 0, 0);
         skyboxMaterial.specularColor = new Color3(0, 0, 0);
         skybox.material = skyboxMaterial;
-        this._scene.environmentIntensity = 0.1;
+        skybox.infiniteDistance = true;
+        this._scene.environmentIntensity = 0.5;
     }
     
 }

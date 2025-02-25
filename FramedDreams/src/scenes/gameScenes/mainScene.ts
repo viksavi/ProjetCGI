@@ -1,54 +1,51 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, Color4, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, TransformNode,Tools, SpotLight, Material,PBRMetallicRoughnessMaterial, GlowLayer, ShadowGenerator,  Color4, CannonJSPlugin, Ray, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentMain } from "../../environments/environmentMain";
+import { House } from "../../house/house";
 
 export class MainScene extends AbstractModelScene { 
     public environment: EnvironmentMain = new EnvironmentMain(this._scene);
     public player: Player;
     public assets: any;
-    private _hemiLight: HemisphericLight;
-    private _pointLight: PointLight;
+    private _sceneReady: boolean = false;
+    private _house: House;
 
     constructor(engine: Engine, goToScene0: () => void) {
         super(engine);
-        this._goToScene0 = goToScene0; 
+        this._goToScene0 = goToScene0;
     }
 
     private _goToScene0: () => void; //dependency injection
 
     public async load(): Promise<any> {
-        
-        this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
-        this._hemiLight.intensity = 0.7;
-
-        this._pointLight = new PointLight("pointLight", new Vector3(0, 5, 0), this._scene);
-        this._pointLight.intensity = 50;
-        this._pointLight.diffuse = new Color3(1, 1, 1);
-        this._pointLight.specular = new Color3(1, 1, 1);
-
         this._scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098);
-        let camera = new UniversalCamera("camera1", new Vector3(0, 2, 8), this._scene);
+        let camera = new UniversalCamera("camera1", new Vector3(-1, 1.5, 8), this._scene);
         camera.setTarget(new Vector3(0, 2, 10));
-        camera.speed = 0.2;
+        camera.speed = 0.6;
         camera.inertia = 0.5; 
+        camera.angularSensibility = 2000;
         camera.attachControl(true);
 
         this._scene.activeCamera = camera;
+
         const assumedFramesPerSecond = 60;
         const earthGravity = -9.81;
-        //this._scene.gravity = new Vector3(0, earthGravity / assumedFramesPerSecond, 0);
-        /*camera.applyGravity = true;
-        //camera.ellipsoid = new Vector3(1, 1, 1);
-        camera.ellipsoid = new Vector3(1, 2, 1); 
-        camera.ellipsoidOffset = new Vector3(0, 1, 0); 
+        this._scene.gravity = new Vector3(0, earthGravity / assumedFramesPerSecond, 0);
+        camera.applyGravity = true;
+        camera.ellipsoid = new Vector3(0.4, 1, 0.4);
+        camera.ellipsoidOffset = new Vector3(0, 0.7, 0);
+        camera.minZ = 0.45;
+        (camera as any).slopFactor = 1.5;
+
         this._scene.collisionsEnabled = true;
-        camera.checkCollisions = true;*/
+        camera.checkCollisions = true;
         
         await this.environment.load();
         await this._loadCharacterAssets();
-
         this.environment.enableCollisions();
+        this._house = new House(this._scene, camera, this._goToScene0);
+        this._onSceneReady();
     }
 
     protected async _loadCharacterAssets(): Promise<any> {
@@ -99,6 +96,28 @@ export class MainScene extends AbstractModelScene {
         this._goToScene0();
     }
 
-    private add
+    private _onSceneReady(): void {
+        this._sceneReady = true;
+        this._scene.onBeforeRenderObservable.add(() => {
+            this.stairsCollision();
+            console.log("scene ready");
+        });
+        this._house.onPointerDownEvts();
+    }
 
+    private stairsCollision(): void {
+        const camera = this._scene.activeCamera;
+        const mesh1 = this._scene.getMeshByName("Collision_1.015");
+        const mesh2 = this._scene.getMeshByName("Floor_10.001");
+        if(mesh1 && mesh2) {
+            if (camera && camera.position.y >= 3) {
+                mesh1.checkCollisions = true;
+                mesh2.checkCollisions = true;
+            } else if(camera && camera.position.y < 3) {
+                mesh1.checkCollisions = false;
+                mesh2.checkCollisions = false;
+                mesh1.isVisible = false;
+            }
+        }
+    }
 }

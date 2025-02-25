@@ -1,5 +1,5 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, Color4, Mesh, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, Color4, Mesh,CubeTexture, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
 
@@ -42,7 +42,6 @@ export class Scene0 extends AbstractModelScene {
 
         await this.environment.load();
         await this._loadCharacterAssets();
-
         // Création et positionnement du joueur APRES le chargement des assets
         if (this.assets && this.assets.mesh && this.assets.animationGroups) {
             // Préparer les paramètres du joueur
