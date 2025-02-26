@@ -2,7 +2,7 @@ import { AbstractModelScene } from "../baseScenes/abstractModelScene";
 import { Matrix, MeshBuilder, FreeCamera, Engine, Vector3, Color4, Mesh, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ShadowGenerator, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
-import { SimpleInput } from "../../inputController";
+import { PlayerInput } from "../../inputController";
 
 export class Scene0 extends AbstractModelScene {
     public environment: EnvironmentScene0 = new EnvironmentScene0(this._scene);
@@ -10,33 +10,34 @@ export class Scene0 extends AbstractModelScene {
     public assets: any;
     private _hemiLight: HemisphericLight;
     private _direcLight: DirectionalLight;
-
     private _shadowGenerator: ShadowGenerator;
+    private _playerInput: PlayerInput;
 
-    private _input: SimpleInput;
+    private _playerData: { position: Vector3, rotation: Quaternion } | null;
 
     constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
         super(engine);
         this._playerData = playerData;
+        this._playerInput = new PlayerInput(this._scene);
     }
 
-    private _playerData: { position: Vector3, rotation: Quaternion } | null;
 
     public async load(): Promise<void> {
         this._scene.clearColor = new Color4(0.1, 0.1, 0.3, 1);
 
-        // Configuration de la caméra (inchangée)
+        
+        // Configuration de la caméra
         let freeCam = new FreeCamera("freeCamera", new Vector3(8.8, 13.5, -8.5), this._scene);
         freeCam.setTarget(new Vector3(-1.5, 0.5, 1));
         freeCam.attachControl(this._engine.getRenderingCanvas(), true);
         freeCam.inertia = 0.5;
         freeCam.angularSensibility = 200;
-
         freeCam.keysUp.push(90);
         freeCam.keysDown.push(83);
         freeCam.keysLeft.push(81);
         freeCam.keysRight.push(68);
-
+        
+        
         // Lumières
         this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
         this._hemiLight.intensity = 1;
@@ -50,35 +51,30 @@ export class Scene0 extends AbstractModelScene {
 
         await this.environment.load();
         await this._loadCharacterAssets();
-
-        /*
-        this._walkAnimation = this.assets.animationGroups.find(ag => ag.name === "walk");
-        this._runAnimation = this.assets.animationGroups.find(ag => ag.name === "run");
-        this._idleAnimation = this.assets.animationGroups.find(ag => ag.name === "idle");
-        */
+        
 
         // Création et positionnement du joueur APRES le chargement des assets
         if (this.assets && this.assets.mesh && this.assets.animationGroups) {
-            //input
-            this._input = new SimpleInput(this._scene);
 
             // Créer le joueur avec les paramètres
-            this.player = this.createPlayer(this.assets, this._shadowGenerator, this._input);
+            this.player = this.createPlayer(this.assets);
+            this.player.mesh.position = new Vector3(2.3, 0, 2);
 
             //Activer camera
-            this.player.activatePlayerCamera();
+            //this.player.activatePlayerCamera();
 
-            // Ajout pour le débogage :
+            //Ajout pour le débogage :
             console.log("Position initiale du joueur :", this.player.position);
             console.log("Echelle du joueur :", this.player.scaling);
         } else {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
     }
-
     //Fonction qui permet de créer le player
-    private createPlayer(assets, shadowGenerator: ShadowGenerator, input: SimpleInput): Player {
-        const player = new Player(assets, this._scene, shadowGenerator, input);
+    public createPlayer(params: any): Player {
+        const player = new Player(params.mesh, params.animationGroups, this._shadowGenerator);
+        player.mesh = params.mesh;
+        player.assets.animationGroups = params.animationGroups;
         return player;
     }
 
@@ -89,7 +85,6 @@ export class Scene0 extends AbstractModelScene {
             outer.isVisible = false;
             outer.isPickable = false;
             outer.checkCollisions = true;
-
             //move origin of box collider to the bottom of the mesh (to match player mesh)
             outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
             //for collisions
@@ -101,9 +96,9 @@ export class Scene0 extends AbstractModelScene {
             //--IMPORTING MESH--
             return SceneLoader.ImportMeshAsync(null, "/", "lostronaut.glb", this._scene).then((result) => {
                 const root = result.meshes[0];
-                //body is our actual player mesh
+                //body is the player's mesh
                 const body = root;
-                body.scaling = new Vector3(13, 13, 13),
+                body.scaling = new Vector3(100, 100, 100),
                 body.position = new Vector3(2.3, 0, 2);
                 body.parent = outer;
                 body.isPickable = false;
@@ -111,7 +106,6 @@ export class Scene0 extends AbstractModelScene {
                     m.isPickable = false;
                 })
 
-                //return the mesh and animations
                 return {
                     mesh: outer as Mesh,
                     animationGroups: result.animationGroups
@@ -122,12 +116,14 @@ export class Scene0 extends AbstractModelScene {
         this.assets = await loadCharacter(); // Assignation directe des assets
     }
 
+
+
     public dispose(): void {
         this._scene.dispose();
     }
 }
-/*
 
+/*
 export class Scene0 extends AbstractModelScene {
     public environment: EnvironmentScene0 = new EnvironmentScene0(this._scene);
     public player: Player;
@@ -139,20 +135,7 @@ export class Scene0 extends AbstractModelScene {
     private _idleAnimation: AnimationGroup | undefined;
     private _walkSpeed: number = 0.04;
 
-    constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
-        super(engine);
-        this._playerData = playerData;
-    }
-
-    private _playerData: { position: Vector3, rotation: Quaternion } | null;
-
     public async load(): Promise<void> {
-
-        this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
-        this._hemiLight.intensity = 1;
-
-        this._direcLight = new DirectionalLight("direcLight", new Vector3(12, 13, -4), this._scene);
-        this._direcLight.intensity = 1.5;
 
         await this.environment.load();
         await this._loadCharacterAssets();
@@ -182,52 +165,6 @@ export class Scene0 extends AbstractModelScene {
         this._setupInput(); // Mise en place des contrôles après la création du joueur
     }
 
-    //Fonction qui permet de créer le player
-    private createPlayer(params: any): Player {
-        const player = new Player(params);
-        return player;
-    }
-
-    protected async _loadCharacterAssets(): Promise<void> {
-        const loadCharacter = async () => {
-            //collision mesh
-            const outer = MeshBuilder.CreateBox("outer", { width: 2, depth: 1, height: 3 }, this._scene);
-            outer.isVisible = false;
-            outer.isPickable = false;
-            outer.checkCollisions = true;
-
-            //move origin of box collider to the bottom of the mesh (to match player mesh)
-            outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
-            //for collisions
-            outer.ellipsoid = new Vector3(1, 1.5, 1);
-            outer.ellipsoidOffset = new Vector3(0, 1.5, 0);
-
-            outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
-
-            //--IMPORTING MESH--
-            return SceneLoader.ImportMeshAsync(null, "/", "lostronaut.glb", this._scene).then((result) => {
-                const root = result.meshes[0];
-                //body is our actual player mesh
-                const body = root;
-                body.scaling = new Vector3(13, 13, 13),
-                body.position = new Vector3(2.3, 0, 2);
-                body.parent = outer;
-                body.isPickable = false;
-                body.getChildMeshes().forEach(m => {
-                    m.isPickable = false;
-                })
-
-                //return the mesh and animations
-                return {
-                    mesh: outer as Mesh,
-                    animationGroups: result.animationGroups
-                };
-            });
-        }
-
-        this.assets = await loadCharacter(); // Assignation directe des assets
-    }
-
     private _setupInput(): void {
         // ActionManager pour la gestion des événements clavier
         this._scene.actionManager = new ActionManager(this._scene);
@@ -239,7 +176,7 @@ export class Scene0 extends AbstractModelScene {
                 () => {
                     if (this._walkAnimation) {
                         this._walkAnimation.start(true); // Démarrer l'animation en boucle
-                        this._moveCharacterBack(); // Déclencher le déplacement du personnage
+                        this._moveCharacter(); // Déclencher le déplacement du personnage
                     }
                 }
             )
@@ -280,56 +217,6 @@ export class Scene0 extends AbstractModelScene {
                 }
             )
         );
-
-        // Action pour démarrer l'animation "walk" et le déplacement vers la droite
-        this._scene.actionManager.registerAction(
-            new ExecuteCodeAction(
-                { trigger: ActionManager.OnKeyDownTrigger, parameter: 'f' },
-                () => {
-                    if (this._walkAnimation) {
-                        this._walkAnimation.start(true); // Démarrer l'animation en boucle
-                        this._moveCharacterLeft(); // Déclencher le déplacement du personnage
-                    }
-                }
-            )
-        );
-            // Action pour arrêter l'animation et le déplacement
-            this._scene.actionManager.registerAction(
-                new ExecuteCodeAction(
-                    { trigger: ActionManager.OnKeyUpTrigger, parameter: 'f' },
-                    () => {
-                        if (this._walkAnimation) {
-                            this._walkAnimation.stop();
-                        }
-                    }
-                )
-            );
-
-        // Action pour démarrer l'animation "walk" et le déplacement vers la gauche 
-        this._scene.actionManager.registerAction(
-            new ExecuteCodeAction(
-                { trigger: ActionManager.OnKeyDownTrigger, parameter: 'h' },
-                () => {
-                    if (this._walkAnimation) {
-                        this._walkAnimation.start(true); // Démarrer l'animation en boucle
-                        this._moveCharacterRight(); // Déclencher le déplacement du personnage
-                    }
-                }
-            )
-        );
-        // Action pour arrêter l'animation et le déplacement
-        this._scene.actionManager.registerAction(
-            new ExecuteCodeAction(
-                { trigger: ActionManager.OnKeyUpTrigger, parameter: 'h' },
-                () => {
-                    if (this._walkAnimation) {
-                        this._walkAnimation.stop();
-                    }
-                }
-            )
-        );
-
-
     }
 
     //Fonction de deplacement du personnage
@@ -357,8 +244,5 @@ export class Scene0 extends AbstractModelScene {
         this.player.position
         console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
     }
-
-    public dispose(): void {
-        this._scene.dispose();
-    }
-}*/
+}
+*/

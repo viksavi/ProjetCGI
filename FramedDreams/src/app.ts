@@ -7,6 +7,8 @@ import { StartScene } from "./scenes/scenesUI/startScene";
 import { CutScene } from "./scenes/scenesUI/cutScene";
 import { MainScene } from "./scenes/gameScenes/mainScene";
 import { Scene0 } from "./scenes/gameScenes/scene_0";
+import { PlayerInput } from "./inputController";
+import { Player } from "./characterController";
 
 enum State {START = 0, CUT_SCENE = 1, MAIN_SCENE = 2, SCENE_0 = 3}
 
