@@ -18,6 +18,10 @@ export class Light {
         this._hemiLight.diffuse = new Color3(0.82, 0.81, 0.78); 
     }
 
+    public getLightOn(): boolean {
+        return this._lightOn;   
+    }
+
     public getSwitches(): Mesh[] {
         return this._switches;
     }

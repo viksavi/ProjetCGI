@@ -130,7 +130,7 @@ class App {
             this._scene.dispose();
         }
 
-        const mainScene = new MainScene(this._engine, () => this._goToScene0());
+        const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas);
         this._scene = mainScene;
         await mainScene.load();
         this._state = State.MAIN_SCENE;
