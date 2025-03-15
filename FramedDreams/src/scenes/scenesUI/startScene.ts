@@ -1,19 +1,19 @@
 import { AbstractScene } from "../baseScenes/abstractScene";
-import { Engine, FreeCamera, Vector3, Color4, ParticleSystem, Texture, MeshBuilder } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button, Control, TextBlock, Rectangle } from "@babylonjs/gui";
-import { IPerfMetadataCategory } from "@babylonjs/inspector/components/actionTabs/tabs/performanceViewer/performanceViewerComponent";
+import { Engine, FreeCamera, Vector3, Color4, ParticleSystem, Texture } from "@babylonjs/core";
+import { AdvancedDynamicTexture, Button, Control, TextBlock } from "@babylonjs/gui";
 
 export class StartScene extends AbstractScene {
+
+    private _goToCutScene: () => void;
 
     constructor(engine: Engine, goToCutScene: () => void) {
         super(engine);
         this._goToCutScene = goToCutScene;
     }
 
-    private _goToCutScene: () => void;
-
     public async load(): Promise<void> {
-        this._scene.clearColor = new Color4(0.05, 0.05, 0.15, 1);
+
+        this._scene.clearColor = Color4.FromHexString("#0A1A2A");
         let camera = new FreeCamera("camera1", new Vector3(0, 0, -10), this._scene);
         camera.setTarget(Vector3.Zero());
 
@@ -24,8 +24,8 @@ export class StartScene extends AbstractScene {
         particleSystem.minEmitBox = new Vector3(-15, -15, -20);
         particleSystem.maxEmitBox = new Vector3(15, 15, 20);
 
-        particleSystem.color1 = new Color4(0.8, 0.5, 1, 0.7);
-        particleSystem.color2 = new Color4(0.5, 0.3, 0.9, 0.7);
+        particleSystem.color1 = Color4.FromHexString("#4F7CAC");
+        particleSystem.color2 = Color4.FromHexString("#8AB6D6");
 
         particleSystem.minSize = 0.1;
         particleSystem.maxSize = 0.3;
@@ -48,11 +48,14 @@ export class StartScene extends AbstractScene {
         const title = new TextBlock();
         title.fontFamily = "Rubik Puddles";
         title.text = "Framed Dreams";
-        title.color = "#dce6ff";
+        title.color = "#D6E4F0";
         title.fontSize = 90;
         title.top = "-150px";
         title.alpha = 0;
+        title.shadowBlur = 5;
+        title.shadowColor = "#EDF4FA";
         title.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
+        title.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         ui.addControl(title);
 
         // Animation de fondu progressive
@@ -67,23 +70,23 @@ export class StartScene extends AbstractScene {
 
         // Bouton PLAY stylisé
         const startBtn = Button.CreateSimpleButton("start", "Start");
-        startBtn.fontFamily = "Special Elite";
-        startBtn.width = 0.2;
+        startBtn.fontFamily = "EB Garamond";
+        startBtn.width = 0.15;
         startBtn.height = "60px";
-        startBtn.color = "#dce6ff";
+        startBtn.color = "#D6E4F0";
         startBtn.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         
         // Transparence initiale (presque transparent)
-        startBtn.background = "rgba(38, 118, 171, 0.2)"; // Equivalent de #2676ab avec alpha à 0.2
+        startBtn.background = "rgba(27, 43, 64, 0.3)";
         startBtn.cornerRadius = 15;
-        startBtn.thickness = 0; // Retire la bordure pour un aspect plus discret
+        startBtn.thickness = 0;
         startBtn.top = "-80px";
-        startBtn.fontSize = 24;
+        startBtn.fontSize = 28;
         startBtn.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
 
         // Augmente l'opacité au survol
-        startBtn.onPointerEnterObservable.add(() => startBtn.background = "rgba(38, 118, 171, 0.5)"); // Alpha à 0.5 au survol
-        startBtn.onPointerOutObservable.add(() => startBtn.background = "rgba(38, 118, 171, 0.2)"); // Retour à la transparence initiale
+        startBtn.onPointerEnterObservable.add(() => startBtn.background = "rgba(44, 62, 86, 0.5)"); // Alpha à 0.5 au survol
+        startBtn.onPointerOutObservable.add(() => startBtn.background = "rgba(27, 43, 64, 0.3)"); // Retour à la transparence initiale
         ui.addControl(startBtn);
 
         startBtn.onPointerDownObservable.add(() => {
