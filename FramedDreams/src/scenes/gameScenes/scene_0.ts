@@ -41,7 +41,7 @@ export class Scene0 extends AbstractModelScene {
         this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
         this._hemiLight.intensity = 1;
 
-        this._direcLight = new DirectionalLight("direcLight", new Vector3(12, 13, -4), this._scene);
+        this._direcLight = new DirectionalLight("direcLight", new Vector3(-12, -13, 4), this._scene);
         this._direcLight.intensity = 1.5;
 
         await this.environment.load();
@@ -71,7 +71,7 @@ export class Scene0 extends AbstractModelScene {
 
     //Fonction qui permet de créer le player
     private createPlayer(params: any): Player {
-        const player = new Player(params);
+        const player = new Player(params.mesh, params.animationGroups, params.scene);
         return player;
     }
 
