@@ -15,6 +15,10 @@ export class Scene0 extends AbstractModelScene {
     constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
         super(engine);
         this._playerData = playerData;
+        if (document.pointerLockElement) {
+            document.exitPointerLock();
+        }
+    
     }
 
     private _playerData: { position: Vector3, rotation: Quaternion } | null;

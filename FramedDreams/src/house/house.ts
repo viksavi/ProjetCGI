@@ -1,6 +1,6 @@
-import { Scene, Mesh, Vector3,HemisphericLight, HighlightLayer, UniversalCamera, Tools, Quaternion, Color3,Material, GlowLayer, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture, PBRMetallicRoughnessMaterial } from "@babylonjs/core";
-import {Door} from "./door"
-import {Light} from "./light"
+import { Scene, Mesh, Vector3, FreeCamera,  HighlightLayer, Color3, GlowLayer, StandardMaterial, Texture } from "@babylonjs/core";
+import { Door } from "./door"
+import { Light } from "./light"
 
 export class House {
     private _scene: Scene;
@@ -8,12 +8,15 @@ export class House {
     private _light: Light;
     private _glasses: Mesh[] = [];
     private _highlightLayer: HighlightLayer;
-    private _camera: UniversalCamera;
+    private _camera: FreeCamera;
     private _glassesVisible: boolean = false;
     private _glassesOn: boolean = false;
     private _tableau1: Mesh;
+    private _tableauBack: Mesh;
+    private _emmissiveMaterial: StandardMaterial;
+    private _glowLayer: GlowLayer;
 
-    constructor(scene: Scene, camera: UniversalCamera, goToScene0: () => void) {
+    constructor(scene: Scene, camera: FreeCamera, goToScene0: () => void) {
         this._scene = scene;
         this._camera = camera;
         this._light = new Light(this._scene);
@@ -21,7 +24,14 @@ export class House {
         this._highlightLayer = new HighlightLayer("hl1", this._scene);
         this.makeGlasses();
         this._tableau1 = this._scene.getMeshByName("Martian_tableau") as Mesh;
+        this._tableauBack = this._scene.getMeshByName("OBJ_Picture_01") as Mesh;
         this._goToScene0 = goToScene0;
+        this._emmissiveMaterial = new StandardMaterial("emissiveMaterial", scene);
+        this._emmissiveMaterial.emissiveTexture = new Texture("Martian_emit.png", scene);
+        this._glowLayer = new GlowLayer("glow", this._scene);
+        this._glowLayer.intensity = 0;
+        this._glowLayer.addIncludedOnlyMesh(this._tableau1);
+
     }
 
     private _goToScene0: () => void;
@@ -65,6 +75,17 @@ export class House {
                 this._highlightLayer.removeMesh(this._glasses[0]);
                 this._glassesVisible = false;
             }
+            if(!this._light.getLightOn() && this._glassesOn) {
+                this._tableau1.isVisible = true;
+                this._highlightLayer.addMesh(this._tableauBack, Color3.White());
+                this._highlightLayer.innerGlow = true;
+                this._glowLayer.intensity = 0.5;
+                this._tableau1.material = this._emmissiveMaterial;
+            } else if(this._light.getLightOn()) {
+                this._glowLayer.intensity = 0;
+                this._tableau1.isVisible = false;
+                this._highlightLayer.removeMesh(this._tableauBack);
+            }
         });
     }
 
@@ -89,6 +110,5 @@ export class House {
             mesh.isVisible = false;
             console.log(mesh);
         });
-        this._tableau1.isVisible = true;
     }
 }

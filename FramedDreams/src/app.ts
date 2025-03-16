@@ -1,7 +1,7 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Vector3, Quaternion, AssetContainer }  from "@babylonjs/core";
+import { Engine, Vector3, Quaternion }  from "@babylonjs/core";
 import { AbstractScene } from "./scenes/baseScenes/abstractScene";
 import { StartScene } from "./scenes/scenesUI/startScene";
 import { CutScene } from "./scenes/scenesUI/cutScene";
@@ -130,7 +130,7 @@ class App {
             this._scene.dispose();
         }
 
-        const mainScene = new MainScene(this._engine, () => this._goToScene0());
+        const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas);
         this._scene = mainScene;
         await mainScene.load();
         this._state = State.MAIN_SCENE;
