@@ -1,4 +1,5 @@
 import { TransformNode, ShadowGenerator, Scene, Mesh, UniversalCamera, ArcRotateCamera, Vector3, Quaternion, Ray, Scalar } from "@babylonjs/core";
+import { SimpleInput } from "./inputController";
 
 export class Player extends TransformNode {
     public camera;
@@ -33,7 +34,7 @@ export class Player extends TransformNode {
 
     private _currentRotationY: number = 0; // Stocke la rotation actuelle
 
-    constructor(assets, scene: Scene, shadowGenerator, input?) {
+    constructor(assets, scene: Scene) {
         super("player", scene);
         this.scene = scene;
         this._setupPlayerCamera();
@@ -41,9 +42,14 @@ export class Player extends TransformNode {
         this.mesh = assets.mesh;
         this.mesh.parent = this;
 
-        shadowGenerator.addShadowCaster(assets.mesh); //the player mesh will cast shadows
-
-        this._input = input;
+        //shadowGenerator.addShadowCaster(assets.mesh); //the player mesh will cast shadows
+        if (this.mesh.parent) {
+            this.mesh.parent = null;  // Убираем родителя, чтобы точка вращения не зависела от родительского объекта
+        }
+        this._input = new SimpleInput(scene);
+        console.log("Before setPivotPoint, Pivot:", this.mesh.getPivotPoint());
+this.mesh.setPivotPoint(Vector3.Zero());
+console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
     }
 
     private _updateFromControls(): void {
@@ -53,54 +59,49 @@ export class Player extends TransformNode {
 
         this._h = this._input.horizontal; // L'entrée horizontale correspond à l'axe X
         this._v = this._input.vertical;   // L'entrée verticale correspond à l'axe Z
+        let fwd = this._camRoot.forward.clone();
+        let right = this._camRoot.right.clone();
+        let correctedVertical = fwd.scaleInPlace(this._v);
+        let correctedHorizontal = right.scaleInPlace(this._h);
 
-        // Stocker la position actuelle AVANT de faire quoi que ce soit
-        const currentPosition = this.mesh.position.clone();
-
-        // Rotation quadri-directionnelle simple
-        let targetRotation = this._currentRotationY; // Rotation par défaut = actuelle
-
-        if (this._v > 0) { // Avancer
-            targetRotation = 0; // Face avant (0 degrés)
-        } else if (this._v < 0) { // Reculer
-            targetRotation = Math.PI; // Face arrière (180 degrés)
+        //movement based off of camera's view
+        let move = correctedHorizontal.addInPlace(correctedVertical);
+        this._moveDirection = new Vector3((move).normalize().x, 0, (move).normalize().z);
+        let inputMag = Math.abs(this._h) + Math.abs(this._v);
+        if (inputMag < 0) {
+            this._inputAmt = 0;
+        } else if (inputMag > 1) {
+            this._inputAmt = 1;
+        } else {
+            this._inputAmt = inputMag;
         }
 
-        if (this._h > 0) { // Droite
-            targetRotation = Math.PI * 0.5; // Face droite (90 degrés)
-        } else if (this._h < 0) { // Gauche
-            targetRotation = -Math.PI * 0.5; // Face gauche (-90 degrés)
+        this._moveDirection = this._moveDirection.scaleInPlace(this._inputAmt * Player.PLAYER_SPEED);
+
+        let input = new Vector3(this._input.horizontalAxis, 0, this._input.verticalAxis); //along which axis is the direction
+        if (input.length() == 0) {//if there's no input detected, prevent rotation and keep player in same rotation
+            return;
         }
+        this.mesh.setPivotPoint(new Vector3(0, 0, 0)); 
+        let camY = this._camRoot.rotationQuaternion 
+        ? this._camRoot.rotationQuaternion.toEulerAngles().y 
+        : this._camRoot.rotation.y;
 
-        if(this._h > 0 && this._v > 0){ //Diagonal avant droite
-          targetRotation = Math.PI * 0.25;
-        } else if (this._h > 0 && this._v < 0){ //Diagonal arriere droite
-          targetRotation = Math.PI * 0.75;
-        } else if (this._h < 0 && this._v > 0){ //Diagonal avant gauche
-          targetRotation = -Math.PI * 0.25;
-        } else if (this._h < 0 && this._v < 0){ //Diagonal arriere gauche
-          targetRotation = -Math.PI * 0.75;
-        }
+        let angle = Math.atan2(this._input.horizontalAxis, this._input.verticalAxis) + camY;
 
-        // Appliquer la rotation (instantanée)
-        this.mesh.rotationQuaternion = Quaternion.FromEulerAngles(0, targetRotation, 0);
-
-        // Mettre à jour la rotation actuelle
-        this._currentRotationY = targetRotation;
-
-        // Remettre la position à sa valeur d'origine APRÈS la rotation
-         this.mesh.position.copyFrom(currentPosition);
-
-        // Utiliser les entrées directement pour le mouvement (APRES la rotation)
-        this._moveDirection = new Vector3(this._h, 0, this._v); // h correspond à X, v correspond à Z
-
-        // Réduire la magnitude du vecteur de mouvement
-        const smallerMovementFactor = 0.1; // Ajustez cette valeur pour contrôler la magnitude
-
-        this._moveDirection = this._moveDirection.scale(smallerMovementFactor);
-
-        this._moveDirection.normalize();
-        this._moveDirection = this._moveDirection.scale(Player.PLAYER_SPEED);
+        //let angle = Math.atan2(this._input.horizontalAxis, this._input.verticalAxis);
+        let targ = Quaternion.FromEulerAngles(0, angle, 0);
+        angle += this._camRoot.rotation.y;
+        this.mesh.rotationQuaternion = Quaternion.Slerp(this.mesh.rotationQuaternion, targ, 10 * this._deltaTime);
+        this.mesh.setPivotPoint(new Vector3(0, 0, 0)); 
+        //this.mesh.rotationQuaternion = targ; 
+        console.log("Pivot point:", this.mesh.getBoundingInfo().boundingBox.centerWorld);
+        console.log("horizontalAxis:", this._input.horizontalAxis);
+        console.log("verticalAxis:", this._input.verticalAxis);
+        console.log("camRoot rotation.y:", this._camRoot.rotation.y);
+        console.log("angle:", angle);
+        console.log("target quaternion:", targ);
+        console.log("mesh rotationQuaternion:", this.mesh.rotationQuaternion);
 
     }
 

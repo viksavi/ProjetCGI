@@ -16,25 +16,24 @@ constructor(scene: Scene) {
     this.inputMap = {};
     scene.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
         this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
-        this._updateFromKeyboard(); // Mettre à jour immédiatement lors de l'appui
     }));
     scene.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
         this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown";
-        this._updateFromKeyboard(); // Mettre à jour immédiatement lors du relâchement
     }));
 
     scene.onBeforeRenderObservable.add(() => {
-        // this._updateFromKeyboard(); // Ne plus mettre à jour ici
+        this._updateFromKeyboard();
     });
 }
 
 private _updateFromKeyboard(): void {
     // Vertical Movement
-    if (this.inputMap["t"]) {
-        this.vertical = 1; // Vitesse maximale instantanément
+    if (this.inputMap["ArrowUp"]) {
+        console.log("touche ArrowUp")
+        this.vertical = Scalar.Lerp(this.vertical, 1, 0.2); // Vitesse maximale progressivement
         this.verticalAxis = 1; // Direction : avant
-    } else if (this.inputMap["g"]) {
-        this.vertical = -1; // Vitesse maximale instantanément
+    } else if (this.inputMap["ArrowDown"]) {
+        this.vertical = Scalar.Lerp(this.vertical, -1, 0.2);; // Vitesse maximale instantanément
         this.verticalAxis = -1; // Direction : arrière
     } else {
         this.vertical = 0; // Arrêt instantané
@@ -42,11 +41,11 @@ private _updateFromKeyboard(): void {
     }
 
     // Horizontal Movement
-    if (this.inputMap["f"]) {
-        this.horizontal = -1; // Vitesse maximale instantanément
+    if (this.inputMap["ArrowLeft"]) {
+        this.horizontal = Scalar.Lerp(this.horizontal, -1, 0.2); // Vitesse maximale instantanément
         this.horizontalAxis = -1; // Direction : gauche
-    } else if (this.inputMap["h"]) {
-        this.horizontal = 1; // Vitesse maximale instantanément
+    } else if (this.inputMap["ArrowRight"]) {
+        this.horizontal = Scalar.Lerp(this.horizontal, 1, 0.2); // Vitesse maximale instantanément
         this.horizontalAxis = 1; // Direction : droite
     } else {
         this.horizontal = 0; // Arrêt instantané

@@ -1,5 +1,5 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, Color4, Mesh,CubeTexture, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, Color4, Mesh,CubeTexture, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
 
@@ -11,6 +11,7 @@ export class Scene0 extends AbstractModelScene {
     private _direcLight: DirectionalLight;
     private _walkAnimation: AnimationGroup | undefined;
     private _walkSpeed: number = 0.01; // Vitesse de déplacement
+    private _camera: UniversalCamera;
 
     constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
         super(engine);
@@ -27,16 +28,12 @@ export class Scene0 extends AbstractModelScene {
         this._scene.clearColor = new Color4(0.1, 0.1, 0.3, 1);
 
         // Configuration de la caméra (inchangée)
-        let freeCam = new FreeCamera("freeCamera", new Vector3(8.8, 13.5, -8.5), this._scene);
-        freeCam.setTarget(new Vector3(-1.5, 0.5, 1));
-        freeCam.attachControl(this._engine.getRenderingCanvas(), true);
-        freeCam.inertia = 0.5;
-        freeCam.angularSensibility = 200;
+        this._camera = new UniversalCamera("cam", new Vector3(8.8, 13.5, -8.5), this._scene);
+        this._camera.setTarget(new Vector3(-1.5, 0.5, 1));
+        this._camera.attachControl(this._engine.getRenderingCanvas(), true);
+        this._camera.inertia = 0.5;
+        this._camera.angularSensibility = 200;
 
-        freeCam.keysUp.push(90);
-        freeCam.keysDown.push(83);
-        freeCam.keysLeft.push(81);
-        freeCam.keysRight.push(68);
 
         this._hemiLight = new HemisphericLight("hemiLight", new Vector3(0, 1, 0), this._scene);
         this._hemiLight.intensity = 1;
@@ -56,7 +53,8 @@ export class Scene0 extends AbstractModelScene {
             };
 
             // Créer le joueur avec les paramètres
-            this.player = this.createPlayer(playerParams);
+            this.player = new Player(playerParams, this._scene);
+            this._camera = this.player.activatePlayerCamera();
             this._walkAnimation = this.assets.animationGroups.find(ag => ag.name === "walk");
 
             // Ajout pour le débogage :
@@ -66,28 +64,27 @@ export class Scene0 extends AbstractModelScene {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
 
-        this._setupInput(); // Mise en place des contrôles après la création du joueur
+       // this._setupInput(); // Mise en place des contrôles après la création du joueur
     }
 
-    //Fonction qui permet de créer le player
-    private createPlayer(params: any): Player {
-        const player = new Player(params);
-        return player;
-    }
+  
 
     protected async _loadCharacterAssets(): Promise<void> {
         const loadCharacter = async () => {
             //collision mesh
-            const outer = MeshBuilder.CreateBox("outer", { width: 2, depth: 1, height: 3 }, this._scene);
+            const outer = MeshBuilder.CreateBox("outer", { width: 0.5, depth: 0.5, height: 1 }, this._scene);
             outer.isVisible = false;
             outer.isPickable = false;
             outer.checkCollisions = true;
+            outer.showBoundingBox = true;
+            outer.position = new Vector3(0, 0, 0);
+            	
 
             //move origin of box collider to the bottom of the mesh (to match player mesh)
-            outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
+            outer.bakeTransformIntoVertices(Matrix.Translation(0, 0.5, 0))
             //for collisions
-            outer.ellipsoid = new Vector3(1, 1.5, 1);
-            outer.ellipsoidOffset = new Vector3(0, 1.5, 0);
+            outer.ellipsoid = new Vector3(0.5, 0.5, 0.5);
+            outer.ellipsoidOffset = new Vector3(0, 0.5, 0);
 
             outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
 
@@ -97,7 +94,7 @@ export class Scene0 extends AbstractModelScene {
                 //body is our actual player mesh
                 const body = root;
                 body.scaling = new Vector3(13, 13, 13),
-                body.position = new Vector3(2.3, 0, 2);
+                body.position = Vector3.Zero();
                 body.parent = outer;
                 body.isPickable = false;
                 body.getChildMeshes().forEach(m => {

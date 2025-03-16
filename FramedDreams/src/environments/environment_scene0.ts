@@ -13,5 +13,9 @@ export class EnvironmentScene0 extends Environment {
                     meshes: result.meshes,
                 };
             }
+            this.assets.meshes.forEach((mesh) => {
+                mesh.checkCollisions = true;
+                mesh.showBoundingBox = true;
+            });
         }
 }
