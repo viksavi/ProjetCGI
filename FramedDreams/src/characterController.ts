@@ -1,5 +1,4 @@
-import { PlayerInput } from "./inputController";
-import { AnimationGroup, TransformNode, ShadowGenerator, Scene, Mesh, UniversalCamera, ArcRotateCamera, Vector3, Quaternion, Ray, Scalar } from "@babylonjs/core";
+import { TransformNode, ShadowGenerator, Scene, Mesh, UniversalCamera, ArcRotateCamera, Vector3, Quaternion, Ray, Scalar } from "@babylonjs/core";
 
 export class Player extends TransformNode {
     public camera;
@@ -34,7 +33,7 @@ export class Player extends TransformNode {
 
     private _currentRotationY: number = 0; // Stocke la rotation actuelle
 
-    constructor(assets, scene: Scene, shadowGenerator: ShadowGenerator, input?) {
+    constructor(assets, scene: Scene, shadowGenerator, input?) {
         super("player", scene);
         this.scene = scene;
         this._setupPlayerCamera();
@@ -52,8 +51,8 @@ export class Player extends TransformNode {
 
         this._moveDirection = Vector3.Zero();
 
-        this._h = this._input.horizontal;
-        this._v = this._input.vertical;
+        this._h = this._input.horizontal; // L'entrée horizontale correspond à l'axe X
+        this._v = this._input.vertical;   // L'entrée verticale correspond à l'axe Z
 
         // Stocker la position actuelle AVANT de faire quoi que ce soit
         const currentPosition = this.mesh.position.clone();
@@ -93,9 +92,16 @@ export class Player extends TransformNode {
          this.mesh.position.copyFrom(currentPosition);
 
         // Utiliser les entrées directement pour le mouvement (APRES la rotation)
-        this._moveDirection = new Vector3(this._h, 0, this._v);
+        this._moveDirection = new Vector3(this._h, 0, this._v); // h correspond à X, v correspond à Z
+
+        // Réduire la magnitude du vecteur de mouvement
+        const smallerMovementFactor = 0.1; // Ajustez cette valeur pour contrôler la magnitude
+
+        this._moveDirection = this._moveDirection.scale(smallerMovementFactor);
+
         this._moveDirection.normalize();
         this._moveDirection = this._moveDirection.scale(Player.PLAYER_SPEED);
+
     }
 
     private _floorRaycast(offsetx: number, offsetz: number, raycastlen: number): Vector3 {
