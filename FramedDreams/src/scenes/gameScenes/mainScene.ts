@@ -1,8 +1,8 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, PointerEventTypes, ActionManager, ExecuteCodeAction, TransformNode,Tools, SpotLight, Material,PBRMetallicRoughnessMaterial, GlowLayer, ShadowGenerator,  Color4, CannonJSPlugin, Ray, PhysicsImpostor, StandardMaterial, Texture,  Mesh, MeshBuilder, HDRCubeTexture, Matrix, Quaternion, AssetContainer, SceneLoader, DirectionalLight,  HemisphericLight, PointLight, Color3, UniversalCamera } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, PointerEventTypes, Color4 } from "@babylonjs/core";
 import { Player } from "../../characterController";
-import * as GUI from "@babylonjs/gui";
 import { EnvironmentMain } from "../../environments/environmentMain";
+import { GUIHouse } from "../../gui/guiHouse"; 
 import { House } from "../../house/house";
 
 export class MainScene extends AbstractModelScene { 
@@ -13,11 +13,13 @@ export class MainScene extends AbstractModelScene {
     private _house: House;
     private _canvas: HTMLCanvasElement;
     private _camera: FreeCamera;
+    private _guiHandler: GUIHouse;
 
     constructor(engine: Engine, goToScene0: () => void, canvas: HTMLCanvasElement) {
         super(engine);
         this._goToScene0 = goToScene0;
         this._canvas = canvas;
+        this._guiHandler = new GUIHouse(this.ui);
     }
 
     private _goToScene0: () => void; //dependency injection
@@ -48,21 +50,6 @@ export class MainScene extends AbstractModelScene {
         this._camera.minZ = 0.45;
         (this._camera as any).slopFactor = 1.5;
 
-        const crosshair = new GUI.Ellipse();
-        crosshair.width = "8px"; 
-        crosshair.height = "8px";
-        crosshair.color = "white"; 
-        crosshair.thickness = 1; 
-        crosshair.background = "white"; 
-        crosshair.alpha = 1; 
-        crosshair.left = "0px";
-        crosshair.top = "0px";
-        crosshair.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_CENTER;
-        crosshair.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_CENTER;
-
-    
-        this.ui.addControl(crosshair);
-
         this._scene.collisionsEnabled = true;
         this._camera.checkCollisions = true;
         if (this._camera.inputs.attached.mouse) {
@@ -79,37 +66,10 @@ export class MainScene extends AbstractModelScene {
 
     protected async _loadCharacterAssets(): Promise<any> {
         const loadCharacter = async () => {
-            //collision mesh
-            const outer = MeshBuilder.CreateBox("outer", { width: 2, depth: 1, height: 3 }, this._scene);
-            outer.isVisible = false;
-            outer.isPickable = false;
-            outer.checkCollisions = true;
-
-            //move origin of box collider to the bottom of the mesh (to match player mesh)
-            outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
-            //for collisions
-            outer.ellipsoid = new Vector3(1, 1.5, 1);
-            outer.ellipsoidOffset = new Vector3(0, 1.5, 0);
-
-            outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
+            //collision mesh for hands
+           
+            //--IMPORTING HANDS--
             
-            //--IMPORTING MESH--
-            return SceneLoader.ImportMeshAsync(null, "/", "Animation1.glb", this._scene).then((result) =>{
-                const root = result.meshes[0];
-                //body is our actual player mesh
-                const body = root;
-                body.parent = outer;
-                body.isPickable = false;
-                body.getChildMeshes().forEach(m => {
-                    m.isPickable = false;
-                })
-                
-                //return the mesh and animations
-                return {
-                    mesh: outer as Mesh,
-                    animationGroups: result.animationGroups
-                };
-            });
         }
 
         return loadCharacter().then(assets => {
@@ -118,10 +78,12 @@ export class MainScene extends AbstractModelScene {
     }
 
     public dispose(): void {
+        this.disposeCameraControl();
         this._scene.dispose();
     }
 
-    public goToScene0() {
+    public goToScene0() { 
+        this._scene.dispose(); 
         this._goToScene0();
     }
 
@@ -150,13 +112,60 @@ export class MainScene extends AbstractModelScene {
         }
     }
 
+    private disposeCameraControl(): void {
+        if (document.pointerLockElement === this._canvas) {
+            document.exitPointerLock();
+        }
+
+        this._scene.onPointerObservable.clear(); 
+        this._canvas.removeEventListener("click", this.lockPointer);
+        document.removeEventListener('pointerlockchange', this.pointerLockChange);
+        this._canvas.removeEventListener("contextmenu", this.contextMenu);
+    }
+
+    private lockPointer = (event: MouseEvent) => {
+        const margin = 5;
+        const canvas = this._canvas;
+        const rect = canvas.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+    
+        if (Math.abs(event.clientX - centerX) <= margin &&
+            Math.abs(event.clientY - centerY) <= margin) 
+            {
+                canvas.requestPointerLock = canvas.requestPointerLock || (canvas as any).mozRequestPointerLock || (canvas as any).webkitRequestPointerLock;
+                if (canvas.requestPointerLock) {
+                    canvas.requestPointerLock();
+                }
+        }
+    };
+
+    private pointerLockChange = () => {
+        if (document.pointerLockElement !== this._canvas) {
+            console.log("Pointer Lock lost");
+        }
+    };
+
+    private contextMenu = (evt: Event) => {
+        evt.preventDefault();
+    };
+
     private initCameraControl(canvas: HTMLCanvasElement, camera: FreeCamera): void {
         const rotationSpeed = 0.005;
+        const margin = 5; 
     
-        const lockPointer = () => {
-            canvas.requestPointerLock = canvas.requestPointerLock || (canvas as any).mozRequestPointerLock || (canvas as any).webkitRequestPointerLock;
-            if (canvas.requestPointerLock) {
-                canvas.requestPointerLock();
+        const lockPointer = (event: MouseEvent) => {
+            const rect = canvas.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+    
+            if (Math.abs(event.clientX - centerX) <= margin &&
+                Math.abs(event.clientY - centerY) <= margin) 
+                {
+                    canvas.requestPointerLock = canvas.requestPointerLock || (canvas as any).mozRequestPointerLock || (canvas as any).webkitRequestPointerLock;
+                    if (canvas.requestPointerLock) {
+                        canvas.requestPointerLock();
+                    }
             }
         };
     
@@ -176,16 +185,12 @@ export class MainScene extends AbstractModelScene {
             }
         });
     
-        canvas.addEventListener("click", lockPointer);
+        canvas.addEventListener("click", this.lockPointer);
     
-        document.addEventListener('pointerlockchange', () => {
-            if (document.pointerLockElement !== canvas) {
-                console.log("Pointer Lock потерян");
-            }
-        });
-
-        canvas.addEventListener("contextmenu", (evt) => {
-            evt.preventDefault();
-        }, false);
+        document.addEventListener('pointerlockchange', this.pointerLockChange);
+    
+        canvas.addEventListener("contextmenu", this.contextMenu);
     }
+
+
 }

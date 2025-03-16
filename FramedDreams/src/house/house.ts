@@ -1,6 +1,6 @@
-import { Scene, Mesh, Vector3, FreeCamera, HemisphericLight, HighlightLayer, UniversalCamera, Tools, Quaternion, Color3,Material, GlowLayer, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture, PBRMetallicRoughnessMaterial } from "@babylonjs/core";
-import {Door} from "./door"
-import {Light} from "./light"
+import { Scene, Mesh, Vector3, FreeCamera,  HighlightLayer, Color3, GlowLayer, StandardMaterial, Texture } from "@babylonjs/core";
+import { Door } from "./door"
+import { Light } from "./light"
 
 export class House {
     private _scene: Scene;
@@ -110,6 +110,5 @@ export class House {
             mesh.isVisible = false;
             console.log(mesh);
         });
-        //this._tableau1.isVisible = true;
     }
 }

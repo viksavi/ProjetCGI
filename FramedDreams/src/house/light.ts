@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3,HemisphericLight, Color3,Material, GlowLayer, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture, PBRMetallicRoughnessMaterial } from "@babylonjs/core";
+import { Scene, Mesh, Vector3,HemisphericLight, Color3,Material, GlowLayer, StandardMaterial } from "@babylonjs/core";
 
 export class Light {
     private _scene: Scene;
