@@ -1,6 +1,6 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
 import { Engine, FreeCamera, Vector3, Color4, Mesh,CubeTexture, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction, UniversalCamera } from "@babylonjs/core";
-import { Player } from "../../characterController";
+import { Player } from "../../mars/character/characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
 
 export class Scene0 extends AbstractModelScene {
@@ -9,20 +9,15 @@ export class Scene0 extends AbstractModelScene {
     public assets: any;
     private _hemiLight: HemisphericLight;
     private _direcLight: DirectionalLight;
-    private _walkAnimation: AnimationGroup | undefined;
-    private _walkSpeed: number = 0.01; // Vitesse de déplacement
     private _camera: UniversalCamera;
 
-    constructor(engine: Engine, playerData: { position: Vector3, rotation: Quaternion } | null) {
+    constructor(engine: Engine) {
         super(engine);
-        this._playerData = playerData;
         if (document.pointerLockElement) {
             document.exitPointerLock();
         }
     
     }
-
-    private _playerData: { position: Vector3, rotation: Quaternion } | null;
 
     public async load(): Promise<void> {
         this._scene.clearColor = new Color4(0.1, 0.1, 0.3, 1);
@@ -55,7 +50,6 @@ export class Scene0 extends AbstractModelScene {
             // Créer le joueur avec les paramètres
             this.player = new Player(playerParams, this._scene);
             this._camera = this.player.activatePlayerCamera();
-            this._walkAnimation = this.assets.animationGroups.find(ag => ag.name === "walk");
 
             // Ajout pour le débogage :
             console.log("Position initiale du joueur :", this.player.position);
@@ -63,8 +57,6 @@ export class Scene0 extends AbstractModelScene {
         } else {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
-
-       // this._setupInput(); // Mise en place des contrôles après la création du joueur
     }
 
   
@@ -89,7 +81,7 @@ export class Scene0 extends AbstractModelScene {
             outer.rotationQuaternion = new Quaternion(0, 1, 0, 0); // rotate the player mesh 180 since we want to see the back of the player
 
             //--IMPORTING MESH--
-            return SceneLoader.ImportMeshAsync(null, "/", "astronaute.glb", this._scene).then((result) => {
+            return SceneLoader.ImportMeshAsync(null, "/models/characters/", "astronaute.glb", this._scene).then((result) => {
                 const root = result.meshes[0];
                 //body is our actual player mesh
                 const body = root;
@@ -110,43 +102,6 @@ export class Scene0 extends AbstractModelScene {
         }
 
         this.assets = await loadCharacter(); // Assignation directe des assets
-    }
-
-    private _setupInput(): void {
-        // ActionManager pour la gestion des événements clavier
-        this._scene.actionManager = new ActionManager(this._scene);
-
-        // Action pour démarrer l'animation "walk" et le déplacement
-        this._scene.actionManager.registerAction(
-            new ExecuteCodeAction(
-                { trigger: ActionManager.OnKeyDownTrigger, parameter: 'w' }, // Touche "w" (peut être modifiée)
-                () => {
-                    if (this._walkAnimation) {
-                        this._walkAnimation.start(true); // Démarrer l'animation en boucle
-                        this._moveCharacter(); // Déclencher le déplacement du personnage
-                    }
-                }
-            )
-        );
-
-        // Action pour arrêter l'animation et le déplacement
-        this._scene.actionManager.registerAction(
-            new ExecuteCodeAction(
-                { trigger: ActionManager.OnKeyUpTrigger, parameter: 'w' }, // Touche "w" relâchée
-                () => {
-                    if (this._walkAnimation) {
-                        this._walkAnimation.stop();
-                    }
-                }
-            )
-        );
-    }
-
-    //Fonction de deplacement du personnage
-    private _moveCharacter(): void {
-        // Déplacer le mesh du personnage vers l'avant
-        this.player.mesh.position.z += this._walkSpeed *2,5;
-        console.log("Nouvelle position du mesh du joueur :", this.player.mesh.position);
     }
 
     public dispose(): void {

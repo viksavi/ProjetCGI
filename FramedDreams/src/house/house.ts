@@ -27,7 +27,7 @@ export class House {
         this._tableauBack = this._scene.getMeshByName("OBJ_Picture_01") as Mesh;
         this._goToScene0 = goToScene0;
         this._emmissiveMaterial = new StandardMaterial("emissiveMaterial", scene);
-        this._emmissiveMaterial.emissiveTexture = new Texture("Martian_emit.png", scene);
+        this._emmissiveMaterial.emissiveTexture = new Texture("/textures/Martian_emit.png", scene);
         this._glowLayer = new GlowLayer("glow", this._scene);
         this._glowLayer.intensity = 0;
         this._glowLayer.addIncludedOnlyMesh(this._tableau1);

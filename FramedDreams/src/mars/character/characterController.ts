@@ -1,4 +1,4 @@
-import { TransformNode, ShadowGenerator, Scene, Mesh, UniversalCamera, ArcRotateCamera, Vector3, Quaternion, Ray, Scalar } from "@babylonjs/core";
+import { TransformNode, AnimationGroup, Scene, Mesh, UniversalCamera, Vector3, Quaternion, Ray } from "@babylonjs/core";
 import { SimpleInput } from "./inputController";
 
 export class Player extends TransformNode {
@@ -31,6 +31,7 @@ export class Player extends TransformNode {
     private _gravity: Vector3 = new Vector3();
     private _lastGroundPos: Vector3 = Vector3.Zero(); // keep track of the last grounded position
     private _grounded: boolean;
+    private currentAnim: String;
 
     private _currentRotationY: number = 0; // Stocke la rotation actuelle
 
@@ -87,7 +88,7 @@ export class Player extends TransformNode {
         ? this._camRoot.rotationQuaternion.toEulerAngles().y 
         : this._camRoot.rotation.y;
 
-        let angle = Math.atan2(this._input.horizontalAxis, this._input.verticalAxis) + camY;
+        let angle = Math.atan2(-this._input.horizontalAxis, -this._input.verticalAxis) + camY;
         let targ = Quaternion.FromEulerAngles(0, angle, 0);
         angle += this._camRoot.rotation.y;
         this.mesh.rotationQuaternion = Quaternion.Slerp(this.mesh.rotationQuaternion, targ, 10 * this._deltaTime);
