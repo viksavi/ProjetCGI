@@ -1,5 +1,6 @@
 import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
 import { Environment } from "./environment";
+import { transformWithEsbuild } from "vite";
 
 export class EnvironmentMain extends Environment {
     constructor(scene: Scene) {
@@ -23,7 +24,7 @@ export class EnvironmentMain extends Environment {
 
     public enableCollisions(): void {
         this.assets.meshes.forEach((mesh) => {
-            if (mesh.name.toLowerCase().includes("wall") || mesh.name === "OBJ_Stairs_02") { 
+            if (mesh.name.toLowerCase().includes("wall")) { 
                 mesh.checkCollisions = false; 
             } else {
                 mesh.checkCollisions = true;
