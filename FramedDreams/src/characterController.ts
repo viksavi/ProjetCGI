@@ -48,8 +48,8 @@ export class Player extends TransformNode {
         }
         this._input = new SimpleInput(scene);
         console.log("Before setPivotPoint, Pivot:", this.mesh.getPivotPoint());
-this.mesh.setPivotPoint(Vector3.Zero());
-console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
+        this.mesh.setPivotPoint(Vector3.Zero());
+        console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
     }
 
     private _updateFromControls(): void {
@@ -88,21 +88,10 @@ console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
         : this._camRoot.rotation.y;
 
         let angle = Math.atan2(this._input.horizontalAxis, this._input.verticalAxis) + camY;
-
-        //let angle = Math.atan2(this._input.horizontalAxis, this._input.verticalAxis);
         let targ = Quaternion.FromEulerAngles(0, angle, 0);
         angle += this._camRoot.rotation.y;
         this.mesh.rotationQuaternion = Quaternion.Slerp(this.mesh.rotationQuaternion, targ, 10 * this._deltaTime);
         this.mesh.setPivotPoint(new Vector3(0, 0, 0)); 
-        //this.mesh.rotationQuaternion = targ; 
-        console.log("Pivot point:", this.mesh.getBoundingInfo().boundingBox.centerWorld);
-        console.log("horizontalAxis:", this._input.horizontalAxis);
-        console.log("verticalAxis:", this._input.verticalAxis);
-        console.log("camRoot rotation.y:", this._camRoot.rotation.y);
-        console.log("angle:", angle);
-        console.log("target quaternion:", targ);
-        console.log("mesh rotationQuaternion:", this.mesh.rotationQuaternion);
-
     }
 
     private _floorRaycast(offsetx: number, offsetz: number, raycastlen: number): Vector3 {
@@ -164,7 +153,7 @@ console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
 
     private _updateCamera(): void {
         let centerPlayer = this.mesh.position.x + 2;
-        this._camRoot.position = Vector3.Lerp(this._camRoot.position, new Vector3(centerPlayer, this.mesh.position.y, this.mesh.position.z), 0.4);
+        this._camRoot.position = Vector3.Lerp(this._camRoot.position, new Vector3(centerPlayer - 3, this.mesh.position.y, this.mesh.position.z), 0.4);
     }
 
     private _setupPlayerCamera() {
@@ -172,7 +161,7 @@ console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
         this._camRoot = new TransformNode("root");
         this._camRoot.position = new Vector3(0, 0, 0); //initialized at (0,0,0)
         //to face the player from behind (180 degrees)
-        this._camRoot.rotation = new Vector3(0, Math.PI, 0);
+        this._camRoot.rotation = new Vector3(0, -Math.PI/2, 0);
 
         //rotations along the x-axis (up/down tilting)
         let yTilt = new TransformNode("ytilt");
@@ -182,7 +171,7 @@ console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
         yTilt.parent = this._camRoot;
 
         //our actual camera that's pointing at our root's position
-        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -30), this.scene);
+        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -10), this.scene);
         this.camera.lockedTarget = this._camRoot.position;
         this.camera.fov = 0.47350045992678597;
         this.camera.parent = yTilt;

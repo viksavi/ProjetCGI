@@ -28,11 +28,10 @@ constructor(scene: Scene) {
 
 private _updateFromKeyboard(): void {
     // Vertical Movement
-    if (this.inputMap["ArrowUp"]) {
-        console.log("touche ArrowUp")
+    if (this.inputMap["w"] || this.inputMap["z"]) {
         this.vertical = Scalar.Lerp(this.vertical, 1, 0.2); // Vitesse maximale progressivement
         this.verticalAxis = 1; // Direction : avant
-    } else if (this.inputMap["ArrowDown"]) {
+    } else if (this.inputMap["s"]) {
         this.vertical = Scalar.Lerp(this.vertical, -1, 0.2);; // Vitesse maximale instantanément
         this.verticalAxis = -1; // Direction : arrière
     } else {
@@ -41,10 +40,10 @@ private _updateFromKeyboard(): void {
     }
 
     // Horizontal Movement
-    if (this.inputMap["ArrowLeft"]) {
+    if (this.inputMap["a"] || this.inputMap["q"]) {
         this.horizontal = Scalar.Lerp(this.horizontal, -1, 0.2); // Vitesse maximale instantanément
         this.horizontalAxis = -1; // Direction : gauche
-    } else if (this.inputMap["ArrowRight"]) {
+    } else if (this.inputMap["d"]) {
         this.horizontal = Scalar.Lerp(this.horizontal, 1, 0.2); // Vitesse maximale instantanément
         this.horizontalAxis = 1; // Direction : droite
     } else {

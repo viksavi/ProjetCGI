@@ -77,7 +77,7 @@ export class Scene0 extends AbstractModelScene {
             outer.isPickable = false;
             outer.checkCollisions = true;
             outer.showBoundingBox = true;
-            outer.position = new Vector3(0, 0, 0);
+            outer.position = new Vector3(5.50, 0.07, 2.78);
             	
 
             //move origin of box collider to the bottom of the mesh (to match player mesh)
@@ -94,8 +94,8 @@ export class Scene0 extends AbstractModelScene {
                 //body is our actual player mesh
                 const body = root;
                 body.scaling = new Vector3(13, 13, 13),
-                body.position = Vector3.Zero();
                 body.parent = outer;
+                body.position = Vector3.Zero();
                 body.isPickable = false;
                 body.getChildMeshes().forEach(m => {
                     m.isPickable = false;

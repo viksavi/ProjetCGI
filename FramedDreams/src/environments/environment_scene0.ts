@@ -7,7 +7,7 @@ export class EnvironmentScene0 extends Environment {
     }
 
     public async load(): Promise<void> {
-        const result = await SceneLoader.ImportMeshAsync(null, "/", "martian_world.glb", this._scene);
+        const result = await SceneLoader.ImportMeshAsync(null, "/", "martian.glb", this._scene);
             if (result && result.meshes) {
                 this.assets = {
                     meshes: result.meshes,
@@ -15,7 +15,9 @@ export class EnvironmentScene0 extends Environment {
             }
             this.assets.meshes.forEach((mesh) => {
                 mesh.checkCollisions = true;
-                mesh.showBoundingBox = true;
+                if (mesh.name.toLowerCase().includes("mur") ) { 
+                    mesh.isVisible = false; 
+                }
             });
         }
 }
