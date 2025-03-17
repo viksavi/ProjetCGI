@@ -1,6 +1,6 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
 import { Engine, FreeCamera, Vector3, PointerEventTypes, Color4 } from "@babylonjs/core";
-import { Player } from "../../characterController";
+import { Player } from "../../mars/character/characterController";
 import { EnvironmentMain } from "../../environments/environmentMain";
 import { GUIHouse } from "../../gui/guiHouse"; 
 import { House } from "../../house/house";

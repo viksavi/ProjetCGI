@@ -8,7 +8,7 @@ export class EnvironmentMain extends Environment {
 
     public async load(): Promise<void> {
         try {
-            const result = await SceneLoader.ImportMeshAsync(null, "/", "house_main.glb", this._scene);
+            const result = await SceneLoader.ImportMeshAsync(null, "/models/worlds/", "house_main.glb", this._scene);
             this.assets = {
                 meshes: result.meshes,
                 animationGroups: result.animationGroups,
@@ -40,7 +40,7 @@ export class EnvironmentMain extends Environment {
     }
 
     private addEnvironmentSkyBox(): void {
-        const hdrTexture = new CubeTexture("/blue_sky.env", this._scene); 
+        const hdrTexture = new CubeTexture("/environments/blue_sky.env", this._scene); 
         this._scene.environmentTexture = hdrTexture;
         const skybox = MeshBuilder.CreateBox("skyBox", { size: 1000 }, this._scene);
         const skyboxMaterial = new StandardMaterial("skyBoxMaterial", this._scene);

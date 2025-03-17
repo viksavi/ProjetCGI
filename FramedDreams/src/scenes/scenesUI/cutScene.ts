@@ -123,7 +123,7 @@ export class CutScene extends AbstractScene {
                 this._fadeInText(() => {
                     setTimeout(() => {
                         this._showNextSentence();
-                    }, 3);
+                    }, 2);
                 });
             });
         } else {
