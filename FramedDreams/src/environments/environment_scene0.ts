@@ -18,7 +18,6 @@ export class EnvironmentScene0 extends Environment {
         // Configuration des meshes de l'environnement
         this.assets.meshes.forEach((mesh) => {
             mesh.checkCollisions = true;
-            mesh.showBoundingBox = true;
             if (mesh.name.toLowerCase().includes("mur")) {
                 mesh.isVisible = false;
             }
