@@ -52,6 +52,12 @@ export class Scene0 extends AbstractModelScene {
         } else {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
+<<<<<<< Updated upstream
+=======
+
+        this._mars = new Mars(this._scene, this._camera, this.player.mesh);
+        this._onSceneReady();
+>>>>>>> Stashed changes
     }
 
   

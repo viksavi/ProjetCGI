@@ -48,9 +48,7 @@ export class Player extends TransformNode {
             this.mesh.parent = null;  // Убираем родителя, чтобы точка вращения не зависела от родительского объекта
         }
         this._input = new SimpleInput(scene);
-        console.log("Before setPivotPoint, Pivot:", this.mesh.getPivotPoint());
         this.mesh.setPivotPoint(Vector3.Zero());
-        console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
     }
 
     private _updateFromControls(): void {
