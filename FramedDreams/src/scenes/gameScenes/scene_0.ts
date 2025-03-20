@@ -2,6 +2,7 @@ import { AbstractModelScene } from "../baseScenes/abstractModelScene";
 import { Engine, FreeCamera, Vector3, Color4, Mesh,CubeTexture, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../mars/character/characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
+import { Mars } from "../../mars/mars";
 
 export class Scene0 extends AbstractModelScene {
     public environment: EnvironmentScene0 = new EnvironmentScene0(this._scene);
@@ -10,6 +11,7 @@ export class Scene0 extends AbstractModelScene {
     private _hemiLight: HemisphericLight;
     private _direcLight: DirectionalLight;
     private _camera: UniversalCamera;
+    private _mars: Mars;
 
     constructor(engine: Engine) {
         super(engine);
@@ -57,8 +59,16 @@ export class Scene0 extends AbstractModelScene {
         } else {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
+
+        this._mars = new Mars(this._scene, this._camera);
+        this._onSceneReady();
     }
 
+    private _onSceneReady(): void {
+        this._scene.onBeforeRenderObservable.add(() => {
+            this._mars.marsEvents();
+        });
+    }
   
 
     protected async _loadCharacterAssets(): Promise<void> {
