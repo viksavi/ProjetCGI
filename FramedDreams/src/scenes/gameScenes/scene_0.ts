@@ -16,7 +16,6 @@ export class Scene0 extends AbstractModelScene {
         if (document.pointerLockElement) {
             document.exitPointerLock();
         }
-    
     }
 
     public async load(): Promise<void> {
@@ -50,10 +49,6 @@ export class Scene0 extends AbstractModelScene {
             // Créer le joueur avec les paramètres
             this.player = new Player(playerParams, this._scene);
             this._camera = this.player.activatePlayerCamera();
-
-            // Ajout pour le débogage :
-            console.log("Position initiale du joueur :", this.player.position);
-            console.log("Echelle du joueur :", this.player.scaling);
         } else {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
@@ -85,7 +80,7 @@ export class Scene0 extends AbstractModelScene {
                 const root = result.meshes[0];
                 //body is our actual player mesh
                 const body = root;
-                body.scaling = new Vector3(13, 13, 13),
+                body.scaling = new Vector3(7, 7, 7),
                 body.parent = outer;
                 body.position = Vector3.Zero();
                 body.isPickable = false;

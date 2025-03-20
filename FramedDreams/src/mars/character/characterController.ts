@@ -14,7 +14,7 @@ export class Player extends TransformNode {
     private _yTilt: TransformNode;
 
     //const values
-    private static readonly PLAYER_SPEED: number = 0.04;
+    private static readonly PLAYER_SPEED: number = 0.03;
     private static readonly JUMP_FORCE: number = 0.08;
     private static readonly GRAVITY: number = -2.8;
     private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.5934119456780721, 0, 0);
