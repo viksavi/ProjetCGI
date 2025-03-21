@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, KeyboardEventTypes, TransformNode } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, KeyboardEventTypes, TransformNode, KeyboardInfo } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 
 export class Mars {
@@ -37,25 +37,52 @@ export class Mars {
         this._dialogueText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
         this._dialogueText.top = "40%";
         this._advancedTexture.addControl(this._dialogueText);
-        this._dialogueText.alpha = 0 //Cache l'initial
+        this._dialogueText.alpha = 0
 
     }
 
     public marsEvents() {
+        let canInteract = false; // Suivi de l'état d'interaction
+        let isListening = false; // Suivi de l'état de la radio
+    
         this._scene.onBeforeRenderObservable.add(() => {
-            let currentDistance = 0
-            this._antenne1.forEach(mesh => {
-                currentDistance = Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition());
-            });
-
-            if (currentDistance < 2){
-                 this.showText("Press E to listen to the radio");
+            let currentDistance = Math.min(...this._antenne1.map(mesh => 
+                Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition())
+            ));
+    
+            if (currentDistance < 2) {
+                if (!canInteract && !isListening) { 
+                    this.showText("Press E to listen to the radio");
+                    canInteract = true;
+                }
+            } else {
+                if (canInteract) { 
+                    this.hideText();
+                    canInteract = false;
+                    isListening = false; // Réinitialiser l'état de la radio
+                }
             }
-             else {
-                 this.hideText();
+        });
+    
+        // Ajout unique de l'événement clavier
+        this._scene.onKeyboardObservable.add((kbInfo) => {
+            if (kbInfo.type === KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e") {
+                if (canInteract) {
+                    if (!isListening) {
+                        this.showText("You are listening to the radio...");
+                        console.log("You are listening to the radio...");
+                        isListening = true;
+                    } else {
+                        this.hideText(); // Masquer le texte quand on appuie de nouveau sur E
+                        console.log("You stopped listening to the radio.");
+                        isListening = false;
+                    }
+                }
             }
-         });
+        });
     }
+      
+    
 
     private findAntenne1() {
         const parent = this._scene.getNodeByName("antenne1") as TransformNode;
