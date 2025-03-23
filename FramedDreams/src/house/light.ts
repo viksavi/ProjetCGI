@@ -44,7 +44,6 @@ export class Light {
             }
             this._hemiLight.setEnabled(true);
             this._lightOn = true;
-            const lamp1 = this._scene.getMeshByName("OBJ_Light_01");
         } else {
             this._hemiLight.setEnabled(false);
             const material = new StandardMaterial("glowMaterial", this._scene);

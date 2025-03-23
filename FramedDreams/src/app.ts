@@ -1,7 +1,7 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Vector3, Quaternion }  from "@babylonjs/core";
+import { Engine }  from "@babylonjs/core";
 import { AbstractScene } from "./scenes/baseScenes/abstractScene";
 import { StartScene } from "./scenes/scenesUI/startScene";
 import { CutScene } from "./scenes/scenesUI/cutScene";
@@ -20,7 +20,7 @@ class App {
 
     private _state: number = 0;
 
-    private _playerData: { position: Vector3, rotation: Quaternion } | null = null;
+    private _mainScenePromise: Promise<MainScene>;
 
     constructor() {
         this._canvas = this._createCanvas();
@@ -118,21 +118,28 @@ class App {
         await cutScene.load();
         this._state = State.CUT_SCENE;
 
+        this._mainScenePromise = this._loadMainScene();
+        await this._mainScenePromise;
+
         this._engine.hideLoadingUI();
+    }
+
+    private async _loadMainScene(): Promise<MainScene> {
+
+        const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas);
+        await mainScene.load();
+        return mainScene;
     }
 
     private async _goToMainScene(): Promise<void> {
 
         this._engine.displayLoadingUI();
-        await Promise.resolve();
 
         if (this._scene) {
             this._scene.dispose();
         }
 
-        const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas);
-        this._scene = mainScene;
-        await mainScene.load();
+        this._scene = await this._mainScenePromise;
         this._state = State.MAIN_SCENE;
         this._engine.hideLoadingUI();
     }
@@ -140,10 +147,6 @@ class App {
     private async _goToScene0(): Promise<void> {
         if (this._state === State.MAIN_SCENE && (this._scene as MainScene).player && (this._scene as MainScene).player.mesh) {
             const mainScene = this._scene as MainScene;
-            this._playerData = {
-                position: mainScene.player.mesh.position.clone(),
-                rotation: mainScene.player.mesh.rotationQuaternion?.clone() || Quaternion.Identity()
-            };
         }
 
         this._engine.displayLoadingUI();
@@ -153,7 +156,7 @@ class App {
             this._scene.dispose();
         }
 
-        const scene0 = new Scene0(this._engine, this._playerData);
+        const scene0 = new Scene0(this._engine);
         this._scene = scene0;
         await scene0.load();
         this._state = State.SCENE_0;

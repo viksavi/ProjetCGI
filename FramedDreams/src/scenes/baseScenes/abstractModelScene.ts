@@ -10,5 +10,4 @@ export abstract class AbstractModelScene extends AbstractScene {
         super(engine);
     }
 
-    protected abstract _loadCharacterAssets(): Promise<void>;
 }
