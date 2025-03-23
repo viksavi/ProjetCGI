@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, LoadAssetContainerAsync, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
 import { Environment } from "./environment";
 import { transformWithEsbuild } from "vite";
 
@@ -9,10 +9,11 @@ export class EnvironmentMain extends Environment {
 
     public async load(): Promise<void> {
         try {
-            const result = await SceneLoader.ImportMeshAsync(null, "/models/worlds/", "house_main.glb", this._scene);
+            const container = await LoadAssetContainerAsync("/models/worlds/house_main.glb", this._scene);
+            container.addAllToScene();
             this.assets = {
-                meshes: result.meshes,
-                animationGroups: result.animationGroups,
+                meshes: container.meshes,
+                animationGroups: container.animationGroups,
             };
             this.addEnvironmentSkyBox();
         } catch (e) {

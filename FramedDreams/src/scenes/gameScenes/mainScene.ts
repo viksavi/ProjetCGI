@@ -26,8 +26,8 @@ export class MainScene extends AbstractModelScene {
 
     public async load(): Promise<any> {
         this._scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098);
-        this._camera = new FreeCamera("camera1", new Vector3(-1, 1.5, 8), this._scene);
-        this._camera.setTarget(new Vector3(0, 2, 10));
+        this._camera = new FreeCamera("camera1", new Vector3(-1, 4, 4), this._scene);
+        this._camera.setTarget(new Vector3(-5, 1, 10));
         this._camera.speed = 0.6;
         this._camera.inertia = 0.5; 
         this._camera.angularSensibility = 2000;
@@ -40,7 +40,6 @@ export class MainScene extends AbstractModelScene {
         this._camera.keysLeft.push(81); // Q (AZERTY)
 
         this._scene.activeCamera = this._camera;
-
         const assumedFramesPerSecond = 60;
         const earthGravity = -9.81;
         this._scene.gravity = new Vector3(0, earthGravity / assumedFramesPerSecond, 0);
@@ -56,9 +55,8 @@ export class MainScene extends AbstractModelScene {
             this._camera.inputs.attached.mouse.detachControl();
         }
         this.initCameraControl(this._canvas, this._camera);
-        
-        await this.environment.load();
         await this._loadCharacterAssets();
+        await this.environment.load();
         this.environment.enableCollisions();
         this._house = new House(this._scene, this._camera, this._goToScene0);
         this._onSceneReady();
