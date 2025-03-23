@@ -9,7 +9,6 @@ export class MainScene extends AbstractModelScene {
     public environment: EnvironmentMain = new EnvironmentMain(this._scene);
     public player: Player;
     public assets: any;
-    private _sceneReady: boolean = false;
     private _house: House;
     private _canvas: HTMLCanvasElement;
     private _camera: FreeCamera;
@@ -26,6 +25,35 @@ export class MainScene extends AbstractModelScene {
 
     public async load(): Promise<any> {
         this._scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098);
+        this.createCamera();
+
+        this._scene.collisionsEnabled = true;
+        this._camera.checkCollisions = true;
+        if (this._camera.inputs.attached.mouse) {
+            this._camera.inputs.attached.mouse.detachControl();
+        }
+        this.initCameraControl(this._canvas, this._camera);
+        await this.environment.load();
+        this.environment.enableCollisions();
+        this._house = new House(this._scene, this._camera, this._goToScene0);
+        this._onSceneReady();
+    }
+
+    public dispose(): void {
+        this.disposeCameraControl();
+        this._scene.dispose();
+    }
+
+    public goToScene0() { 
+        this._scene.dispose(); 
+        this._goToScene0();
+    }
+
+    private _onSceneReady(): void {
+        this._house.onPointerDownEvts();
+    }
+
+    private createCamera() {
         this._camera = new FreeCamera("camera1", new Vector3(-1, 4, 4), this._scene);
         this._camera.setTarget(new Vector3(-5, 1, 10));
         this._camera.speed = 0.6;
@@ -48,66 +76,6 @@ export class MainScene extends AbstractModelScene {
         this._camera.ellipsoidOffset = new Vector3(0, 0.7, 0);
         this._camera.minZ = 0.3;
         (this._camera as any).slopFactor = 1.5;
-
-        this._scene.collisionsEnabled = true;
-        this._camera.checkCollisions = true;
-        if (this._camera.inputs.attached.mouse) {
-            this._camera.inputs.attached.mouse.detachControl();
-        }
-        this.initCameraControl(this._canvas, this._camera);
-        await this._loadCharacterAssets();
-        await this.environment.load();
-        this.environment.enableCollisions();
-        this._house = new House(this._scene, this._camera, this._goToScene0);
-        this._onSceneReady();
-    }
-
-    protected async _loadCharacterAssets(): Promise<any> {
-        const loadCharacter = async () => {
-            //collision mesh for hands
-           
-            //--IMPORTING HANDS--
-            
-        }
-
-        return loadCharacter().then(assets => {
-            this.assets = assets;
-        });
-    }
-
-    public dispose(): void {
-        this.disposeCameraControl();
-        this._scene.dispose();
-    }
-
-    public goToScene0() { 
-        this._scene.dispose(); 
-        this._goToScene0();
-    }
-
-    private _onSceneReady(): void {
-        this._sceneReady = true;
-        this._scene.onBeforeRenderObservable.add(() => {
-            this.stairsCollision();
-            console.log("scene ready");
-        });
-        this._house.onPointerDownEvts();
-    }
-
-    private stairsCollision(): void {
-        const camera = this._scene.activeCamera;
-        const mesh1 = this._scene.getMeshByName("Collision_1.015");
-        const mesh2 = this._scene.getMeshByName("Floor_10.001");
-        if(mesh1 && mesh2) {
-            if (camera && camera.position.y >= 3) {
-                mesh1.checkCollisions = true;
-                mesh2.checkCollisions = true;
-            } else if(camera && camera.position.y < 3) {
-                mesh1.checkCollisions = false;
-                mesh2.checkCollisions = false;
-                mesh1.isVisible = false;
-            }
-        }
     }
 
     private disposeCameraControl(): void {
@@ -189,6 +157,4 @@ export class MainScene extends AbstractModelScene {
     
         canvas.addEventListener("contextmenu", this.contextMenu);
     }
-
-
 }

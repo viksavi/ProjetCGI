@@ -1,13 +1,11 @@
-import { Scene, Mesh, Vector3,HemisphericLight, Tools, Quaternion, Color3,Material, GlowLayer, BoundingInfo, TransformNode, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture, PBRMetallicRoughnessMaterial } from "@babylonjs/core";
+import {Mesh, Vector3, Tools, Quaternion, TransformNode } from "@babylonjs/core";
 
 export class Door {
-    private _scene: Scene;
     private _hinge: TransformNode;
     private _doorOpened: boolean = false;
     private _doorName: String;
 
-    constructor(scene: Scene, door: Mesh) {
-        this._scene = scene;
+    constructor(door: Mesh) {
         this._hinge = door.parent as TransformNode;
         this._doorName = door.name;
     }

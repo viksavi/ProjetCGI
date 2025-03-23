@@ -1,7 +1,7 @@
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Vector3, Quaternion }  from "@babylonjs/core";
+import { Engine }  from "@babylonjs/core";
 import { AbstractScene } from "./scenes/baseScenes/abstractScene";
 import { StartScene } from "./scenes/scenesUI/startScene";
 import { CutScene } from "./scenes/scenesUI/cutScene";

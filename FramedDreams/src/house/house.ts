@@ -1,6 +1,7 @@
-import { Scene, Mesh, Vector3, FreeCamera,  HighlightLayer, Color3, GlowLayer, StandardMaterial, Texture } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, FreeCamera,  HighlightLayer, Color3 } from "@babylonjs/core";
 import { Door } from "./door"
 import { Light } from "./light"
+import { Tableau1 } from "./tableau1"
 
 export class House {
     private _scene: Scene;
@@ -11,27 +12,17 @@ export class House {
     private _camera: FreeCamera;
     private _glassesVisible: boolean = false;
     private _glassesOn: boolean = false;
-    private _tableau1: Mesh;
-    private _tableauBack: Mesh;
-    private _emmissiveMaterial: StandardMaterial;
-    private _glowLayer: GlowLayer;
+    private _tableau: Tableau1;
 
     constructor(scene: Scene, camera: FreeCamera, goToScene0: () => void) {
         this._scene = scene;
         this._camera = camera;
         this._light = new Light(this._scene);
         this.findDoors();
-        this._highlightLayer = new HighlightLayer("hl1", this._scene);
         this.makeGlasses();
-        this._tableau1 = this._scene.getMeshByName("Martian_tableau") as Mesh;
-        this._tableauBack = this._scene.getMeshByName("OBJ_Picture_01") as Mesh;
         this._goToScene0 = goToScene0;
-        this._emmissiveMaterial = new StandardMaterial("emissiveMaterial", scene);
-        this._emmissiveMaterial.emissiveTexture = new Texture("/textures/Martian_emit.png", scene);
-        this._glowLayer = new GlowLayer("glow", this._scene);
-        this._glowLayer.intensity = 0;
-        this._glowLayer.addIncludedOnlyMesh(this._tableau1);
-
+        this._tableau = new Tableau1(this._scene);
+        this._highlightLayer = new HighlightLayer("highlight", this._scene);
     }
 
     private _goToScene0: () => void;
@@ -39,7 +30,7 @@ export class House {
     private findDoors() {
         this._scene.meshes.forEach(mesh => {
             if (mesh.name.includes("Door")) {
-                this._doors.push(new Door(this._scene, mesh as Mesh));
+                this._doors.push(new Door(mesh as Mesh));
             }
         });
     }
@@ -54,10 +45,9 @@ export class House {
                 }
                 else if(this._glassesVisible && this._glasses.some(mesh => mesh === pickedMesh)) {
                     this.putGlasses();
-                    console.log("glasses clicked");
                     this._glassesOn = !this._glassesOn;
                 }
-                else if(pickedMesh && this._glassesOn && pickedMesh === this._tableau1) {
+                else if(pickedMesh && this._glassesOn && pickedMesh === this._tableau.getTableau1()) {
                     this._goToScene0();
                 }
                 else if(pickedMesh) {
@@ -68,6 +58,7 @@ export class House {
         };
 
         this._scene.onBeforeRenderObservable.add(() => {
+            this.stairsCollision();
             if (!this._glassesOn && this.isCameraLookingAtGlasses(this._camera, this._glasses[0])) {
                 this._highlightLayer.addMesh(this._glasses[0], Color3.Blue());
                 this._glassesVisible = true;
@@ -76,17 +67,27 @@ export class House {
                 this._glassesVisible = false;
             }
             if(!this._light.getLightOn() && this._glassesOn) {
-                this._tableau1.isVisible = true;
-                this._highlightLayer.addMesh(this._tableauBack, Color3.White());
-                this._highlightLayer.innerGlow = true;
-                this._glowLayer.intensity = 0.5;
-                this._tableau1.material = this._emmissiveMaterial;
+                this._tableau.lightUpTableau();
             } else if(this._light.getLightOn()) {
-                this._glowLayer.intensity = 0;
-                this._tableau1.isVisible = false;
-                this._highlightLayer.removeMesh(this._tableauBack);
+                this._tableau.lightOffTableau();	
             }
         });
+    }
+
+    private stairsCollision(): void {
+        const camera = this._scene.activeCamera;
+        const mesh1 = this._scene.getMeshByName("Collision_1.015");
+        const mesh2 = this._scene.getMeshByName("Floor_10.001");
+        if(mesh1 && mesh2) {
+            if (camera && camera.position.y >= 3) {
+                mesh1.checkCollisions = true;
+                mesh2.checkCollisions = true;
+            } else if(camera && camera.position.y < 3) {
+                mesh1.checkCollisions = false;
+                mesh2.checkCollisions = false;
+                mesh1.isVisible = false;
+            }
+        }
     }
 
     private makeGlasses() {

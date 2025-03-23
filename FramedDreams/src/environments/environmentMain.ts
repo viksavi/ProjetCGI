@@ -1,6 +1,5 @@
-import { Scene, Mesh, Vector3, Color3, BoundingInfo, TransformNode, LoadAssetContainerAsync, CubeTexture, PhysicsImpostor, SceneLoader, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HDRCubeTexture, StandardMaterial, Texture } from "@babylonjs/core";
+import { Scene, Color3, LoadAssetContainerAsync, CubeTexture, MeshBuilder, StandardMaterial, Texture } from "@babylonjs/core";
 import { Environment } from "./environment";
-import { transformWithEsbuild } from "vite";
 
 export class EnvironmentMain extends Environment {
     constructor(scene: Scene) {
