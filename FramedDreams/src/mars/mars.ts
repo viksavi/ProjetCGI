@@ -5,6 +5,10 @@ export class Mars {
     private _scene: Scene;
     private _playerMesh: Mesh;
     private _antenne1: Mesh[] = [];
+    private _antenne2: Mesh[] = [];
+    private _antenne3: Mesh[] = [];
+    private _antenne4: Mesh[] = [];
+    private _antenne5: Mesh[] = [];
     private _advancedTexture: AdvancedDynamicTexture;
     private _dialogueText: TextBlock;
 
@@ -19,15 +23,14 @@ export class Mars {
         }
     
         this.createMessageDialogue();
-        this.findAntenne1();
+        this.findAntenne();
+        this.setupKeyboardEvents();
         setTimeout(() => {
             this.marsEvents();
         }, 100);
-    }    
+    }
     
-
     private createMessageDialogue() {
-        // Configuration du texte de dialogue
         this._dialogueText = new TextBlock();
         this._dialogueText.fontFamily = "EB Garamond";
         this._dialogueText.fontSize = 20;
@@ -35,74 +38,64 @@ export class Mars {
         this._dialogueText.text = "";
         this._dialogueText.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         this._dialogueText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this._dialogueText.top = "40%";
+        this._dialogueText.top = "35%";
         this._advancedTexture.addControl(this._dialogueText);
-        this._dialogueText.alpha = 0
+        this._dialogueText.alpha = 0;
+    }
 
+    private setupKeyboardEvents() {
+        this._scene.onKeyboardObservable.add((kbInfo: KeyboardInfo) => {
+            if (kbInfo.type === KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e") {
+                if (this._dialogueText.alpha === 1) {
+                    this.hideText();
+                    this.showText("You are listening to the radio...");
+                    console.log("Écoute de la radio");
+                }
+            }
+        });
     }
 
     public marsEvents() {
-        let canInteract = false; // Suivi de l'état d'interaction
-        let isListening = false; // Suivi de l'état de la radio
+        let distances = [
+            ...this._antenne1,
+            ...this._antenne2,
+            ...this._antenne3,
+            ...this._antenne4,
+            ...this._antenne5
+        ].map(mesh => Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition()));
+
+        let currentDistance = Math.min(...distances);
+
+        if (currentDistance < 1.2) {
+            this.showText("Press E to listen to the radio");
+            console.log("Proche de la radio");
+        } else {
+            this.hideText();
+            console.log("Loin de la radio");
+        }
+    }
     
-        this._scene.onBeforeRenderObservable.add(() => {
-            let currentDistance = Math.min(...this._antenne1.map(mesh => 
-                Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition())
-            ));
-    
-            if (currentDistance < 2) {
-                if (!canInteract && !isListening) { 
-                    this.showText("Press E to listen to the radio");
-                    canInteract = true;
-                }
+    private findAntenne() {
+        const parentNames = ["antenne1", "antenne2", "antenne3", "antenne4", "antenne5"];
+        const antennes = [this._antenne1, this._antenne2, this._antenne3, this._antenne4, this._antenne5];
+
+        parentNames.forEach((name, index) => {
+            const parent = this._scene.getNodeByName(name) as TransformNode;
+            if (parent) {
+                antennes[index] = parent.getChildMeshes().filter(child => child instanceof Mesh) as Mesh[];
             } else {
-                if (canInteract) { 
-                    this.hideText();
-                    canInteract = false;
-                    isListening = false; // Réinitialiser l'état de la radio
-                }
-            }
-        });
-    
-        // Ajout unique de l'événement clavier
-        this._scene.onKeyboardObservable.add((kbInfo) => {
-            if (kbInfo.type === KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e") {
-                if (canInteract) {
-                    if (!isListening) {
-                        this.showText("You are listening to the radio...");
-                        console.log("You are listening to the radio...");
-                        isListening = true;
-                    } else {
-                        this.hideText(); // Masquer le texte quand on appuie de nouveau sur E
-                        console.log("You stopped listening to the radio.");
-                        isListening = false;
-                    }
-                }
+                console.error(`Erreur : L'antenne ${name} n'a pas été trouvée !`);
             }
         });
     }
-      
-    
-
-    private findAntenne1() {
-        const parent = this._scene.getNodeByName("antenne1") as TransformNode;
-        if (parent) {
-            const children = parent.getChildMeshes();
-            this._antenne1 = children.filter(child => child instanceof Mesh) as Mesh[];
-        } else {
-            console.warn("Il n'y a pas d'antenne !");
-        }
-    }    
-
 
     private showText(message: string): void {
-        this._dialogueText.text = message
-        this._dialogueText.alpha = 1
-
+        this._dialogueText.text = message;
+        this._dialogueText.alpha = 1;
     }
 
     private hideText(): void {
-        this._dialogueText.text = ""
-        this._dialogueText.alpha = 0
+        this._dialogueText.text = "";
+        this._dialogueText.alpha = 0;
     }
 }
