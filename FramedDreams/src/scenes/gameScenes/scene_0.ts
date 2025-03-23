@@ -55,12 +55,11 @@ export class Scene0 extends AbstractModelScene {
 
             // Ajout pour le débogage :
             console.log("Position initiale du joueur :", this.player.position);
-            console.log("Echelle du joueur :", this.player.scaling);
         } else {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
 
-        this._mars = new Mars(this._scene, this._camera);
+        this._mars = new Mars(this._scene, this.player.mesh);
         this._onSceneReady();
     }
 
@@ -78,7 +77,7 @@ export class Scene0 extends AbstractModelScene {
             outer.isVisible = false;
             outer.isPickable = false;
             outer.checkCollisions = true;
-            outer.showBoundingBox = true;
+            outer.showBoundingBox = false;
             outer.position = new Vector3(5.50, 0.07, 2.78);
             	
 
@@ -93,9 +92,8 @@ export class Scene0 extends AbstractModelScene {
             //--IMPORTING MESH--
             return SceneLoader.ImportMeshAsync(null, "/models/characters/", "astronaute.glb", this._scene).then((result) => {
                 const root = result.meshes[0];
-                //body is our actual player mesh
                 const body = root;
-                body.scaling = new Vector3(13, 13, 13),
+                body.scaling = new Vector3(7, 7, 7),
                 body.parent = outer;
                 body.position = Vector3.Zero();
                 body.isPickable = false;

@@ -14,7 +14,7 @@ export class Player extends TransformNode {
     private _yTilt: TransformNode;
 
     //const values
-    private static readonly PLAYER_SPEED: number = 0.04;
+    private static readonly PLAYER_SPEED: number = 0.03;
     private static readonly JUMP_FORCE: number = 0.08;
     private static readonly GRAVITY: number = -2.8;
     private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.5934119456780721, 0, 0);
@@ -48,9 +48,7 @@ export class Player extends TransformNode {
             this.mesh.parent = null;  // Убираем родителя, чтобы точка вращения не зависела от родительского объекта
         }
         this._input = new SimpleInput(scene);
-        console.log("Before setPivotPoint, Pivot:", this.mesh.getPivotPoint());
         this.mesh.setPivotPoint(Vector3.Zero());
-        console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
     }
 
     private _updateFromControls(): void {
