@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, Color3, TransformNode, SceneLoader, FreeCamera, ParticleSystem, Color4, AnimationGroup, MeshBuilder, HemisphericLight, DirectionalLight, ShadowGenerator } from "@babylonjs/core";
+import { Scene, LoadAssetContainerAsync,} from "@babylonjs/core";
 import { Environment } from "./environment";
 
 export class EnvironmentScene0 extends Environment {
@@ -7,17 +7,21 @@ export class EnvironmentScene0 extends Environment {
     }
 
     public async load(): Promise<void> {
-        const result = await SceneLoader.ImportMeshAsync(null, "/models/worlds/", "martian.glb", this._scene);
-            if (result && result.meshes) {
-                this.assets = {
-                    meshes: result.meshes,
-                };
+        // Chargement du monde et de l'antenne (dans le même fichier GLB)
+        const container = await LoadAssetContainerAsync("/models/worlds/martian.glb", this._scene);
+        container.addAllToScene();
+        if (container && container.meshes) {
+            this.assets = {
+                meshes: container.meshes,
+            };
+
+        // Configuration des meshes de l'environnement
+        this.assets.meshes.forEach((mesh) => {
+            mesh.checkCollisions = true;
+            if (mesh.name.toLowerCase().includes("mur")) {
+                mesh.isVisible = false;
             }
-            this.assets.meshes.forEach((mesh) => {
-                mesh.checkCollisions = true;
-                if (mesh.name.toLowerCase().includes("mur") ) { 
-                    mesh.isVisible = false; 
-                }
-            });
+        });
         }
+    }
 }

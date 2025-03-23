@@ -2,6 +2,7 @@ import { AbstractModelScene } from "../baseScenes/abstractModelScene";
 import { Engine, FreeCamera, Vector3, Color4, Mesh,CubeTexture, MeshBuilder, Matrix, Quaternion, SceneLoader, HemisphericLight, DirectionalLight, AnimationGroup, ActionManager, ExecuteCodeAction, UniversalCamera } from "@babylonjs/core";
 import { Player } from "../../mars/character/characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
+import { Mars } from "../../mars/mars";
 
 export class Scene0 extends AbstractModelScene {
     public environment: EnvironmentScene0 = new EnvironmentScene0(this._scene);
@@ -10,6 +11,7 @@ export class Scene0 extends AbstractModelScene {
     private _hemiLight: HemisphericLight;
     private _direcLight: DirectionalLight;
     private _camera: UniversalCamera;
+    private _mars: Mars;
 
     constructor(engine: Engine) {
         super(engine);
@@ -53,12 +55,19 @@ export class Scene0 extends AbstractModelScene {
 
             // Ajout pour le débogage :
             console.log("Position initiale du joueur :", this.player.position);
-            console.log("Echelle du joueur :", this.player.scaling);
         } else {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
+
+        this._mars = new Mars(this._scene, this.player.mesh);
+        this._onSceneReady();
     }
 
+    private _onSceneReady(): void {
+        this._scene.onBeforeRenderObservable.add(() => {
+            this._mars.marsEvents();
+        });
+    }
   
 
     protected async _loadCharacterAssets(): Promise<void> {
@@ -68,7 +77,7 @@ export class Scene0 extends AbstractModelScene {
             outer.isVisible = false;
             outer.isPickable = false;
             outer.checkCollisions = true;
-            outer.showBoundingBox = true;
+            outer.showBoundingBox = false;
             outer.position = new Vector3(5.50, 0.07, 2.78);
             	
 
@@ -83,9 +92,8 @@ export class Scene0 extends AbstractModelScene {
             //--IMPORTING MESH--
             return SceneLoader.ImportMeshAsync(null, "/models/characters/", "astronaute.glb", this._scene).then((result) => {
                 const root = result.meshes[0];
-                //body is our actual player mesh
                 const body = root;
-                body.scaling = new Vector3(13, 13, 13),
+                body.scaling = new Vector3(7, 7, 7),
                 body.parent = outer;
                 body.position = Vector3.Zero();
                 body.isPickable = false;

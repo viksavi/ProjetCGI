@@ -1,6 +1,5 @@
 import * as GUI from "@babylonjs/gui";
 import { AdvancedDynamicTexture } from "@babylonjs/gui";
-import { Scene } from "@babylonjs/core";
 
 export class GUIHouse {
     private _advancedTexture: AdvancedDynamicTexture;

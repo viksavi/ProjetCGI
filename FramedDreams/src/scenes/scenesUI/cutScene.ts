@@ -1,7 +1,6 @@
 import { AbstractScene } from "../baseScenes/abstractScene";
-import { Engine, FreeCamera, Vector3, Color4, AssetContainer, SceneLoader, Scene, Animation } from "@babylonjs/core";
-import { AdvancedDynamicTexture, Button, Control, TextBlock, Rectangle } from "@babylonjs/gui";
-import { MainScene } from "../gameScenes/mainScene";
+import { Engine, FreeCamera, Vector3, Color4, Animation } from "@babylonjs/core";
+import { Control, TextBlock, Rectangle } from "@babylonjs/gui";
 
 // Classe pour gérer le dialogue
 class DialogueManager {
@@ -123,7 +122,7 @@ export class CutScene extends AbstractScene {
                 this._fadeInText(() => {
                     setTimeout(() => {
                         this._showNextSentence();
-                    }, 2);
+                    }, 2000);
                 });
             });
         } else {

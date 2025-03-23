@@ -14,7 +14,7 @@ export class Player extends TransformNode {
     private _yTilt: TransformNode;
 
     //const values
-    private static readonly PLAYER_SPEED: number = 0.04;
+    private static readonly PLAYER_SPEED: number = 0.03;
     private static readonly JUMP_FORCE: number = 0.08;
     private static readonly GRAVITY: number = -2.8;
     private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.5934119456780721, 0, 0);
@@ -43,14 +43,11 @@ export class Player extends TransformNode {
         this.mesh = assets.mesh;
         this.mesh.parent = this;
 
-        //shadowGenerator.addShadowCaster(assets.mesh); //the player mesh will cast shadows
         if (this.mesh.parent) {
-            this.mesh.parent = null;  // Убираем родителя, чтобы точка вращения не зависела от родительского объекта
+            this.mesh.parent = null;  
         }
         this._input = new SimpleInput(scene);
-        console.log("Before setPivotPoint, Pivot:", this.mesh.getPivotPoint());
         this.mesh.setPivotPoint(Vector3.Zero());
-        console.log("After setPivotPoint, Pivot:", this.mesh.getPivotPoint());
     }
 
     private _updateFromControls(): void {
@@ -161,7 +158,7 @@ export class Player extends TransformNode {
         //root camera parent that handles positioning of the camera to follow the player
         this._camRoot = new TransformNode("root");
         this._camRoot.position = new Vector3(0, 0, 0); //initialized at (0,0,0)
-        //to face the player from behind (180 degrees)
+        //to face the player from behind (-90 degrees)
         this._camRoot.rotation = new Vector3(0, -Math.PI/2, 0);
 
         //rotations along the x-axis (up/down tilting)
@@ -172,7 +169,7 @@ export class Player extends TransformNode {
         yTilt.parent = this._camRoot;
 
         //our actual camera that's pointing at our root's position
-        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -10), this.scene);
+        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -8), this.scene);
         this.camera.lockedTarget = this._camRoot.position;
         this.camera.fov = 0.47350045992678597;
         this.camera.parent = yTilt;
