@@ -1,14 +1,10 @@
-import { Scene, Mesh, Vector3, KeyboardEventTypes, TransformNode, KeyboardInfo } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, TransformNode } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 
 export class Mars {
     private _scene: Scene;
     private _playerMesh: Mesh;
-    private _antenne1: Mesh[] = [];
-    private _antenne2: Mesh[] = [];
-    private _antenne3: Mesh[] = [];
-    private _antenne4: Mesh[] = [];
-    private _antenne5: Mesh[] = [];
+    private _antennes: Mesh[][] = [];
     private _advancedTexture: AdvancedDynamicTexture;
     private _dialogueText: TextBlock;
 
@@ -16,23 +12,15 @@ export class Mars {
         this._scene = scene;
         this._playerMesh = playerMesh;
         this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        
-        if (!this._playerMesh) {
-            console.error("Erreur : Le mesh du joueur est indéfini !");
-            return;
-        }
-    
+
         this.createMessageDialogue();
-        this.findAntenne();
-        this.setupKeyboardEvents();
-        setTimeout(() => {
-            this.marsEvents();
-        }, 100);
+        this.findAntennes();
+        this._setupProximityDetection();
     }
-    
+
     private createMessageDialogue() {
         this._dialogueText = new TextBlock();
-        this._dialogueText.fontFamily = "EB Garamond";
+        this._dialogueText.fontFamily = "EB Garamond";  // Typographie unique
         this._dialogueText.fontSize = 20;
         this._dialogueText.color = "white";
         this._dialogueText.text = "";
@@ -43,59 +31,61 @@ export class Mars {
         this._dialogueText.alpha = 0;
     }
 
-    private setupKeyboardEvents() {
-        this._scene.onKeyboardObservable.add((kbInfo: KeyboardInfo) => {
-            if (kbInfo.type === KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "e") {
-                if (this._dialogueText.alpha === 1) {
-                    this.hideText();
-                    this.showText("You are listening to the radio...");
-                    console.log("Écoute de la radio");
-                }
+    private findAntennes() {
+        const parentNames = ["antenne1", "antenne2", "antenne3", "antenne4", "antenne5"];
+        this._antennes = []; 
+
+        parentNames.forEach(name => {
+            const parent = this._scene.getNodeByName(name) as TransformNode;
+            if (parent) {
+                const meshes = parent.getChildMeshes().filter(child => child instanceof Mesh) as Mesh[];
+                this._antennes.push(meshes);
+            } else {
+                this._antennes.push([]);
             }
         });
     }
 
-    public marsEvents() {
-        let distances = [
-            ...this._antenne1,
-            ...this._antenne2,
-            ...this._antenne3,
-            ...this._antenne4,
-            ...this._antenne5
-        ].map(mesh => Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition()));
+    private _antenneMessages: string[] = [
+        "Signal reçu... mais il semble incomplet. Cette première antenne ne transmet que des fragments de données.",
+        "L'atmosphère de Mars est étrange... je capte des signaux, mais la deuxième antenne semble avoir des interférences.",
+        "Un écho résonne dans l'immensité. La troisième antenne envoie un message déformé, mais il y a un indice crucial.",
+        "Les coordonnées sont floues. La quatrième antenne semble être perturbée, mais je suis presque sûr que c'est important.",
+        "Une perturbation dans le signal... la cinquième antenne est en danger. Quelque chose approche, il est peut-être trop tard pour partir."
+    ];
 
-        let currentDistance = Math.min(...distances);
-
-        if (currentDistance < 1.2) {
-            this.showText("Press E to listen to the radio");
-            console.log("Proche de la radio");
-        } else {
-            this.hideText();
-            console.log("Loin de la radio");
-        }
-    }
+    public _setupProximityDetection(): void {
+        this._scene.onBeforeRenderObservable.add(() => {
+            if (!this._playerMesh) return;
     
-    private findAntenne() {
-        const parentNames = ["antenne1", "antenne2", "antenne3", "antenne4", "antenne5"];
-        const antennes = [this._antenne1, this._antenne2, this._antenne3, this._antenne4, this._antenne5];
-
-        parentNames.forEach((name, index) => {
-            const parent = this._scene.getNodeByName(name) as TransformNode;
-            if (parent) {
-                antennes[index] = parent.getChildMeshes().filter(child => child instanceof Mesh) as Mesh[];
+            let closestDistance = Infinity;
+            let closestMessage = "";
+    
+            this._antennes.forEach((antenneGroup, index) => {
+                antenneGroup.forEach(mesh => {
+                    let distance = Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition());
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestMessage = this._antenneMessages[index];  // Récupère le message de l'antenne la plus proche
+                    }
+                });
+            });
+    
+            if (closestDistance < 1.5) {
+                this.showText(closestMessage);
             } else {
-                console.error(`Erreur : L'antenne ${name} n'a pas été trouvée !`);
+                this.hideText();
             }
         });
     }
 
     private showText(message: string): void {
         this._dialogueText.text = message;
-        this._dialogueText.alpha = 1;
+        this._dialogueText.alpha = 1;  // Affiche le texte
     }
 
     private hideText(): void {
         this._dialogueText.text = "";
-        this._dialogueText.alpha = 0;
+        this._dialogueText.alpha = 0;  // Cache le texte
     }
 }
