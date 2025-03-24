@@ -62,7 +62,7 @@ export class CutScene extends AbstractScene {
         this._dialogueText.text = "";
         this._dialogueText.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         this._dialogueText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this._dialogueText.top = "-5%";
+        this._dialogueText.top = "-2%";
         this.ui.addControl(this._dialogueText);
 
         // Configuration du bouton "Next Scene"
