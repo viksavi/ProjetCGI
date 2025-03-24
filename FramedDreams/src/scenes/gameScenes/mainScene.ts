@@ -65,21 +65,22 @@ export class MainScene extends AbstractModelScene {
         this._onSceneReady();
 
         this._dialogueManager = new DialogueManager([
-            "Bienvenue dans ce nouveau monde !",
-            "Explorez les environs...",
-            "Quelque chose d'intéressant vous attend.",
+            "Cet endroit... Je le connais. Mais quelque chose a changé.",
+            "Je me souviens... Le cadre... C’est par là que je dois passer.",
+            "Mais avant... Il me faut ces lunettes. Sans elles, je ne verrai rien.",
+            "Et surtout... Ne pas oublier. Cela ne fonctionne que dans le noir.",
         ]);
 
         // Configuration du texte de dialogue
         this._dialogueText = new TextBlock();
         this._dialogueText.animations = [];
         this._dialogueText.fontFamily = "EB Garamond";
-        this._dialogueText.fontSize = 30;
+        this._dialogueText.fontStyle = "italic";
+        this._dialogueText.fontSize = 26;
         this._dialogueText.color = "white";
         this._dialogueText.text = "";
-        this._dialogueText.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         this._dialogueText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this._dialogueText.top = "-2%";
+        this._dialogueText.top = "35%";
         this.ui.addControl(this._dialogueText);
 
         this._showNextSentence();
@@ -208,18 +209,18 @@ export class MainScene extends AbstractModelScene {
         const sentence = this._dialogueManager.getNextSentence();
 
         if (sentence) {
-            this._fadeOutText(() => {
+            setTimeout(() => {
                 this._dialogueText.text = sentence;
                 this._fadeInText(() => {
                     setTimeout(() => {
-                        this._showNextSentence();
-                    }, 2000);
+                        this._fadeOutText(() => {
+                            setTimeout(() => {
+                                this._showNextSentence();
+                            }, 1500);
+                        });
+                    }, 2500);
                 });
-            });
-        } else {
-            this._fadeOutText(() => {
-                this._dialogueText.text = sentence;
-            });
+            }, 2500);
         }
     }
 
@@ -241,14 +242,14 @@ export class MainScene extends AbstractModelScene {
     }
 
     private _fadeInText = (onComplete: () => void): void => {
-        const animation = this._createFadeAnimation("fadeIn", 0, 1);
-     this._dialogueText.animations.push(animation);
-     this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
+    const animation = this._createFadeAnimation("fadeIn", 0, 1);
+    this._dialogueText.animations.push(animation);
+    this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
  }
 
     private _fadeOutText = (onComplete: () => void): void => {
-            const animation = this._createFadeAnimation("fadeOut", 1, 0);
-        this._dialogueText.animations.push(animation);
-        this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
+    const animation = this._createFadeAnimation("fadeOut", 1, 0);
+    this._dialogueText.animations.push(animation);
+    this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
     }
 }

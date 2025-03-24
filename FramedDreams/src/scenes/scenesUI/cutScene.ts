@@ -119,11 +119,13 @@ export class CutScene extends AbstractScene {
         if (sentence) {
             this._fadeOutText(() => {
                 this._dialogueText.text = sentence;
-                this._fadeInText(() => {
-                    setTimeout(() => {
-                        this._showNextSentence();
-                    }, 2000);
-                });
+                setTimeout(() => {
+                    this._fadeInText(() => {
+                        setTimeout(() => {
+                            this._showNextSentence();
+                        }, 2000);
+                    });
+                }, 1000);
             });
         } else {
             this._fadeInButton();
