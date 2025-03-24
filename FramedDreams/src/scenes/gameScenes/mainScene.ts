@@ -1,9 +1,33 @@
 import { AbstractModelScene } from "../baseScenes/abstractModelScene";
-import { Engine, FreeCamera, Vector3, PointerEventTypes, Color4 } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, PointerEventTypes, Color4, Animation } from "@babylonjs/core";
+import { Control, TextBlock } from "@babylonjs/gui";
 import { Player } from "../../mars/character/characterController";
 import { EnvironmentMain } from "../../environments/environmentMain";
 import { GUIHouse } from "../../gui/guiHouse"; 
 import { House } from "../../house/house";
+
+class DialogueManager {
+    private _dialogueSentences: string[];
+    private _currentSentenceIndex: number = 0;
+
+    constructor(dialogueSentences: string[]) {
+        this._dialogueSentences = dialogueSentences;
+    }
+
+    public getNextSentence(): string | null {
+        if (this._currentSentenceIndex < this._dialogueSentences.length) {
+            const sentence = this._dialogueSentences[this._currentSentenceIndex];
+            this._currentSentenceIndex++;
+            return sentence;
+        } else {
+            return null;
+        }
+    }
+
+    public reset(): void {
+        this._currentSentenceIndex = 0;
+    }
+}
 
 export class MainScene extends AbstractModelScene { 
     public environment: EnvironmentMain = new EnvironmentMain(this._scene);
@@ -13,6 +37,8 @@ export class MainScene extends AbstractModelScene {
     private _canvas: HTMLCanvasElement;
     private _camera: FreeCamera;
     private _guiHandler: GUIHouse;
+    private _dialogueManager: DialogueManager;
+    private _dialogueText: TextBlock;
 
     constructor(engine: Engine, goToScene0: () => void, canvas: HTMLCanvasElement) {
         super(engine);
@@ -37,6 +63,27 @@ export class MainScene extends AbstractModelScene {
         this.environment.enableCollisions();
         this._house = new House(this._scene, this._camera, this._goToScene0);
         this._onSceneReady();
+
+        this._dialogueManager = new DialogueManager([
+            "Cet endroit... Je le connais. Mais quelque chose a changé.",
+            "Je me souviens... Le cadre... C’est par là que je dois passer.",
+            "Mais avant... Il me faut ces lunettes. Sans elles, je ne verrai rien.",
+            "Et surtout... Ne pas oublier. Cela ne fonctionne que dans le noir.",
+        ]);
+
+        // Configuration du texte de dialogue
+        this._dialogueText = new TextBlock();
+        this._dialogueText.animations = [];
+        this._dialogueText.fontFamily = "EB Garamond";
+        this._dialogueText.fontStyle = "italic";
+        this._dialogueText.fontSize = 26;
+        this._dialogueText.color = "white";
+        this._dialogueText.text = "";
+        this._dialogueText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
+        this._dialogueText.top = "35%";
+        this.ui.addControl(this._dialogueText);
+
+        this._showNextSentence();
     }
 
     public dispose(): void {
@@ -156,5 +203,53 @@ export class MainScene extends AbstractModelScene {
         document.addEventListener('pointerlockchange', this.pointerLockChange);
     
         canvas.addEventListener("contextmenu", this.contextMenu);
+    }
+
+    private _showNextSentence = (): void => {
+        const sentence = this._dialogueManager.getNextSentence();
+
+        if (sentence) {
+            setTimeout(() => {
+                this._dialogueText.text = sentence;
+                this._fadeInText(() => {
+                    setTimeout(() => {
+                        this._fadeOutText(() => {
+                            setTimeout(() => {
+                                this._showNextSentence();
+                            }, 1500);
+                        });
+                    }, 2500);
+                });
+            }, 2500);
+        }
+    }
+
+    private _createFadeAnimation(name: string, from: number, to: number): Animation {
+        const animation = new Animation(
+            name,
+            "alpha",
+            30,
+            Animation.ANIMATIONTYPE_FLOAT,
+            Animation.ANIMATIONLOOPMODE_CONSTANT
+        );
+
+        const keys = [];
+        keys.push({ frame: 0, value: from });
+        keys.push({ frame: 30, value: to });
+
+        animation.setKeys(keys);
+        return animation;
+    }
+
+    private _fadeInText = (onComplete: () => void): void => {
+    const animation = this._createFadeAnimation("fadeIn", 0, 1);
+    this._dialogueText.animations.push(animation);
+    this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
+ }
+
+    private _fadeOutText = (onComplete: () => void): void => {
+    const animation = this._createFadeAnimation("fadeOut", 1, 0);
+    this._dialogueText.animations.push(animation);
+    this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
     }
 }

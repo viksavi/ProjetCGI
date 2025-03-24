@@ -62,7 +62,7 @@ export class CutScene extends AbstractScene {
         this._dialogueText.text = "";
         this._dialogueText.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
         this._dialogueText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        this._dialogueText.top = "-5%";
+        this._dialogueText.top = "-2%";
         this.ui.addControl(this._dialogueText);
 
         // Configuration du bouton "Next Scene"
@@ -119,11 +119,13 @@ export class CutScene extends AbstractScene {
         if (sentence) {
             this._fadeOutText(() => {
                 this._dialogueText.text = sentence;
-                this._fadeInText(() => {
-                    setTimeout(() => {
-                        this._showNextSentence();
-                    }, 2000);
-                });
+                setTimeout(() => {
+                    this._fadeInText(() => {
+                        setTimeout(() => {
+                            this._showNextSentence();
+                        }, 2000);
+                    });
+                }, 1000);
             });
         } else {
             this._fadeInButton();

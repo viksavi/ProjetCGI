@@ -6,20 +6,16 @@ export class Player extends TransformNode {
     public scene: Scene;
     private _input;
 
-    //Player
-    public mesh: Mesh; //outer collisionbox of player
+    public mesh: Mesh;
 
-    //Camera
     private _camRoot: TransformNode;
     private _yTilt: TransformNode;
 
-    //const values
     private static readonly PLAYER_SPEED: number = 0.03;
     private static readonly JUMP_FORCE: number = 0.08;
-    private static readonly GRAVITY: number = -2.8;
-    private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.5934119456780721, 0, 0);
+    private static readonly GRAVITY: number = -2.0;
+    private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.55, 0, 0);
 
-    //player movement vars
     private _deltaTime: number = 0;
     private _h: number;
     private _v: number;
@@ -27,13 +23,12 @@ export class Player extends TransformNode {
     private _moveDirection: Vector3 = new Vector3();
     private _inputAmt: number;
 
-    //gravity, ground detection, jumping
     private _gravity: Vector3 = new Vector3();
-    private _lastGroundPos: Vector3 = Vector3.Zero(); // keep track of the last grounded position
+    private _lastGroundPos: Vector3 = Vector3.Zero();
     private _grounded: boolean;
     private currentAnim: String;
 
-    private _currentRotationY: number = 0; // Stocke la rotation actuelle
+    private _currentRotationY: number = 0;
 
     constructor(assets, scene: Scene) {
         super("player", scene);
@@ -44,7 +39,7 @@ export class Player extends TransformNode {
         this.mesh.parent = this;
 
         if (this.mesh.parent) {
-            this.mesh.parent = null;  
+            this.mesh.parent = null;
         }
         this._input = new SimpleInput(scene);
         this.mesh.setPivotPoint(Vector3.Zero());
@@ -55,14 +50,13 @@ export class Player extends TransformNode {
 
         this._moveDirection = Vector3.Zero();
 
-        this._h = this._input.horizontal; // L'entrée horizontale correspond à l'axe X
-        this._v = this._input.vertical;   // L'entrée verticale correspond à l'axe Z
+        this._h = this._input.horizontal;
+        this._v = this._input.vertical;
         let fwd = this._camRoot.forward.clone();
         let right = this._camRoot.right.clone();
         let correctedVertical = fwd.scaleInPlace(this._v);
         let correctedHorizontal = right.scaleInPlace(this._h);
 
-        //movement based off of camera's view
         let move = correctedHorizontal.addInPlace(correctedVertical);
         this._moveDirection = new Vector3((move).normalize().x, 0, (move).normalize().z);
         let inputMag = Math.abs(this._h) + Math.abs(this._v);
@@ -76,8 +70,8 @@ export class Player extends TransformNode {
 
         this._moveDirection = this._moveDirection.scaleInPlace(this._inputAmt * Player.PLAYER_SPEED);
 
-        let input = new Vector3(this._input.horizontalAxis, 0, this._input.verticalAxis); //along which axis is the direction
-        if (input.length() == 0) {//if there's no input detected, prevent rotation and keep player in same rotation
+        let input = new Vector3(this._input.horizontalAxis, 0, this._input.verticalAxis);
+        if (input.length() == 0) {
             return;
         }
         this.mesh.setPivotPoint(new Vector3(0, 0, 0)); 
@@ -121,7 +115,7 @@ export class Player extends TransformNode {
             this._gravity = this._gravity.addInPlace(Vector3.Up().scale(this._deltaTime * Player.GRAVITY));
             this._grounded = false;
         }
-        //limit the speed of gravity to the negative of the jump power
+
         if (this._gravity.y < -Player.JUMP_FORCE) {
             this._gravity.y = -Player.JUMP_FORCE;
         }
@@ -141,37 +135,37 @@ export class Player extends TransformNode {
 
     public activatePlayerCamera(): UniversalCamera {
         this.scene.registerBeforeRender(() => {
-
             this._beforeRenderUpdate();
             this._updateCamera();
-
         })
         return this.camera;
     }
 
     private _updateCamera(): void {
-        let centerPlayer = this.mesh.position.x + 2;
-        this._camRoot.position = Vector3.Lerp(this._camRoot.position, new Vector3(centerPlayer - 3, this.mesh.position.y, this.mesh.position.z), 0.4);
+        const smoothness = 0.5;
+
+        const targetPosition = new Vector3(
+            this.mesh.position.x - 1,
+            this.mesh.position.y,
+            this.mesh.position.z
+        );
+
+        this._camRoot.position = Vector3.Lerp(this._camRoot.position, targetPosition, smoothness);
     }
 
     private _setupPlayerCamera() {
-        //root camera parent that handles positioning of the camera to follow the player
-        this._camRoot = new TransformNode("root");
-        this._camRoot.position = new Vector3(0, 0, 0); //initialized at (0,0,0)
-        //to face the player from behind (-90 degrees)
+        this._camRoot = new TransformNode("root", this.scene);
+        this._camRoot.position = new Vector3(0, 0, 0);
         this._camRoot.rotation = new Vector3(0, -Math.PI/2, 0);
 
-        //rotations along the x-axis (up/down tilting)
-        let yTilt = new TransformNode("ytilt");
-        //adjustments to camera view to point down at our player
+        let yTilt = new TransformNode("ytilt", this.scene);
         yTilt.rotation = Player.ORIGINAL_TILT;
         this._yTilt = yTilt;
         yTilt.parent = this._camRoot;
 
-        //our actual camera that's pointing at our root's position
-        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -8), this.scene);
+        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -10), this.scene);
         this.camera.lockedTarget = this._camRoot.position;
-        this.camera.fov = 0.47350045992678597;
+        this.camera.fov = 0.4;
         this.camera.parent = yTilt;
 
         this.scene.activeCamera = this.camera;
