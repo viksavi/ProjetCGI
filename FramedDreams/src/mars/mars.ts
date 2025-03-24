@@ -1,18 +1,21 @@
-import { Scene, Mesh, Vector3, TransformNode } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, TransformNode, KeyboardEventTypes } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 
 export class Mars {
     private _scene: Scene;
     private _playerMesh: Mesh;
     private _antennes: Mesh[][] = [];
-    private _advancedTexture: AdvancedDynamicTexture;
+    public _advancedTexture: AdvancedDynamicTexture;
     private _dialogueText: TextBlock;
+    private _portal: Mesh;
+    private goToMainScene: () => void;
 
-    constructor(scene: Scene, playerMesh: Mesh) {
+    constructor(scene: Scene, playerMesh: Mesh, goToMainScene: () => void) {
         this._scene = scene;
         this._playerMesh = playerMesh;
         this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
+        this.goToMainScene = goToMainScene;
+        this._portal = this._scene.getMeshByName("gate_complex_primitive1") as Mesh;
         this.createMessageDialogue();
         this.findAntennes();
         this._setupProximityDetection();
@@ -77,6 +80,17 @@ export class Mars {
                 this.hideText();
             }
         });
+
+        this._scene.onPointerDown = (evt, pickInfo) => {
+            if (pickInfo.hit) {
+                const pickedMesh = pickInfo.pickedMesh;
+        
+                if (pickedMesh && pickedMesh === this._portal) { 
+                    this.goToMainScene();
+                }
+                
+            }
+        };
     }
 
     private showText(message: string): void {
