@@ -62,13 +62,8 @@ export class Scene0 extends AbstractModelScene {
         }
 
         this._mars = new Mars(this._scene, this.player.mesh, this.goToMainScene);
-        //this._onSceneReady();
     }
 
-    private _onSceneReady(): void {
-        this._mars.marsEvents();
-    }
-  
 
     protected async _loadCharacterAssets(): Promise<void> {
         const loadCharacter = async () => {
