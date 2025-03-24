@@ -76,7 +76,7 @@ export class MainScene extends AbstractModelScene {
         this._dialogueText.animations = [];
         this._dialogueText.fontFamily = "EB Garamond";
         this._dialogueText.fontStyle = "italic";
-        this._dialogueText.fontSize = 26;
+        this._dialogueText.fontSize = 24;
         this._dialogueText.color = "white";
         this._dialogueText.text = "";
         this._dialogueText.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -216,11 +216,11 @@ export class MainScene extends AbstractModelScene {
                         this._fadeOutText(() => {
                             setTimeout(() => {
                                 this._showNextSentence();
-                            }, 1500);
+                            }, 1000);
                         });
-                    }, 2500);
+                    }, 2000);
                 });
-            }, 2500);
+            }, 1500);
         }
     }
 
