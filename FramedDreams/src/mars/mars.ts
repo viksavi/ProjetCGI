@@ -5,19 +5,21 @@ export class Mars {
     private _scene: Scene;
     private _playerMesh: Mesh;
     private _antenne1: Mesh[] = [];
-    private _advancedTexture: AdvancedDynamicTexture;
+    public _advancedTexture: AdvancedDynamicTexture;
     private _dialogueText: TextBlock;
+    private goToMainScene: () => void
 
-    constructor(scene: Scene, playerMesh: Mesh) {
+    constructor(scene: Scene, playerMesh: Mesh, goToMainScene: () => void) {
         this._scene = scene;
         this._playerMesh = playerMesh;
         this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
-        
+        this.goToMainScene = goToMainScene;
+
         if (!this._playerMesh) {
             console.error("Erreur : Le mesh du joueur est indéfini !");
             return;
         }
-    
+        
         this.createMessageDialogue();
         this.findAntenne1();
         setTimeout(() => {
@@ -44,7 +46,7 @@ export class Mars {
     public marsEvents() {
         let canInteract = false; // Suivi de l'état d'interaction
         let isListening = false; // Suivi de l'état de la radio
-    
+
         this._scene.onBeforeRenderObservable.add(() => {
             let currentDistance = Math.min(...this._antenne1.map(mesh => 
                 Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition())
@@ -62,6 +64,8 @@ export class Mars {
                     isListening = false; // Réinitialiser l'état de la radio
                 }
             }
+
+            
         });
     
         // Ajout unique de l'événement clavier
@@ -78,6 +82,10 @@ export class Mars {
                         isListening = false;
                     }
                 }
+            }
+            if (kbInfo.type === KeyboardEventTypes.KEYDOWN && kbInfo.event.key === "h") {
+                console.log("H key pressed! Transitioning to MainScene...");
+                this.goToMainScene(); 
             }
         });
     }

@@ -12,13 +12,15 @@ export class Scene0 extends AbstractModelScene {
     private _direcLight: DirectionalLight;
     private _camera: UniversalCamera;
     private _mars: Mars;
+    private goToMainScene: () => void
 
-    constructor(engine: Engine) {
+    constructor(engine: Engine, goToMainScene: () => void) {
         super(engine);
         if (document.pointerLockElement) {
             document.exitPointerLock();
         }
-    
+
+        this.goToMainScene = goToMainScene;
     }
 
     public async load(): Promise<void> {
@@ -59,14 +61,12 @@ export class Scene0 extends AbstractModelScene {
             console.warn("Erreur: Assets du personnage non chargés correctement.");
         }
 
-        this._mars = new Mars(this._scene, this.player.mesh);
-        this._onSceneReady();
+        this._mars = new Mars(this._scene, this.player.mesh, this.goToMainScene);
+        //this._onSceneReady();
     }
 
     private _onSceneReady(): void {
-        this._scene.onBeforeRenderObservable.add(() => {
-            this._mars.marsEvents();
-        });
+        this._mars.marsEvents();
     }
   
 
@@ -113,6 +113,51 @@ export class Scene0 extends AbstractModelScene {
     }
 
     public dispose(): void {
+        console.log("Disposing Scene0");
+        this._scene.onBeforeRenderObservable.clear();
+        this._scene.onAfterRenderObservable.clear();
+        this._scene.onKeyboardObservable.clear();
+
+        if (this._mars && this._mars._advancedTexture) {
+            this._mars._advancedTexture.dispose();
+        }
+
+        this._scene.meshes.forEach(mesh => {
+            mesh.dispose();
+        });
+
+        this._scene.lights.forEach(light => {
+            light.dispose();
+        });
+
+        this._scene.cameras.forEach(camera => {
+            camera.dispose();
+        });
+
+        this._scene.materials.forEach(material => {
+            material.dispose();
+        });
+
+        this._scene.textures.forEach(texture => {
+            texture.dispose();
+        });
+
+        if (this.assets && this.assets.animationGroups) {
+            this.assets.animationGroups.forEach(animationGroup => {
+                animationGroup.stop();
+                animationGroup.dispose();
+            });
+        }
+        if (this._scene.actionManager) {
+            this._scene.actionManager.dispose();
+        }
+        if (this.environment) {
+            this.environment.dispose();
+        }
+        if (this.player) {
+            this.player.mesh.dispose();
+        }
         this._scene.dispose();
+        console.log("Scene0 Disposed");
     }
 }
