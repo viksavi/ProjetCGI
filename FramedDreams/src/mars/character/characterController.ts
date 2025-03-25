@@ -26,7 +26,10 @@ export class Player extends TransformNode {
     private _gravity: Vector3 = new Vector3();
     private _lastGroundPos: Vector3 = Vector3.Zero();
     private _grounded: boolean;
-    private currentAnim: String;
+    private _currentAnim: AnimationGroup;
+    private _prevAnim: AnimationGroup;
+    private _idle: AnimationGroup;
+    private _walk: AnimationGroup;
 
     private _currentRotationY: number = 0;
 
@@ -43,6 +46,41 @@ export class Player extends TransformNode {
         }
         this._input = new SimpleInput(scene);
         this.mesh.setPivotPoint(Vector3.Zero());
+
+        this._idle = assets.animationGroups[0];
+        this._walk= assets.animationGroups[2];
+        this._setUpAnimations();
+    }
+
+    private _setUpAnimations(): void {
+
+        this.scene.stopAllAnimations();
+        this._walk.loopAnimation = true;
+        this._idle.loopAnimation = true;
+
+        this._currentAnim = this._idle;
+        this._prevAnim = this._walk;
+    }
+
+    private _animatePlayer(): void {
+        if (this._input.inputMap["w"]
+            || this._input.inputMap["a"] 
+            || this._input.inputMap["s"]
+            || this._input.inputMap["d"]
+            || this._input.inputMap["q"]
+            || this._input.inputMap["z"]) {
+        
+            this._currentAnim = this._walk;
+        } else if (this._grounded) {
+            this._currentAnim = this._idle;
+        } 
+
+        if(this._currentAnim != null && this._prevAnim !== this._currentAnim){
+            this._prevAnim.stop();
+            this._currentAnim.play(this._currentAnim.loopAnimation);
+            this._prevAnim = this._currentAnim;
+        }
+
     }
 
     private _updateFromControls(): void {
@@ -131,6 +169,7 @@ export class Player extends TransformNode {
     private _beforeRenderUpdate(): void {
         this._updateFromControls();
         this._updateGroundDetection();
+        this._animatePlayer();
     }
 
     public activatePlayerCamera(): UniversalCamera {
