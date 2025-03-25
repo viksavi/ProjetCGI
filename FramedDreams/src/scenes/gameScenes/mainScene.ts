@@ -168,4 +168,5 @@ export class MainScene extends AbstractModelScene {
     
         canvas.addEventListener("contextmenu", this.contextMenu);
     }
+
 }
