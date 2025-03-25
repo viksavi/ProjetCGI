@@ -24,4 +24,13 @@ export class EnvironmentScene0 extends Environment {
         });
         }
     }
+
+    public dispose(): void {
+        if(this.assets && this.assets.environmentLight) {
+            this.assets.environmentLight.dispose();
+        }
+        if (this.assets && this.assets.skyTexture) {
+            this.assets.skyTexture.dispose();
+        }
+    }
 }

@@ -19,8 +19,10 @@ class App {
     private _inputMap: {};
 
     private _state: number = 0;
-
-    private _mainScenePromise: Promise<MainScene>;
+    private _startScene: StartScene;
+    private _cutScene: CutScene;
+    private _mainScene: MainScene;
+    private _scene0: Scene0;
 
     constructor() {
         this._canvas = this._createCanvas();
@@ -98,9 +100,9 @@ class App {
             this._scene.dispose();
         }
 
-        const startScene = new StartScene(this._engine, () => this._goToCutScene());
-        this._scene = startScene;
-        await startScene.load();
+        this._startScene = new StartScene(this._engine, () => this._goToCutScene());
+        this._scene = this._startScene;
+        await this._startScene.load();
         this._state = State.START;
 
         this._engine.hideLoadingUI();
@@ -113,13 +115,12 @@ class App {
             this._scene.dispose();
         }
 
-        const cutScene = new CutScene(this._engine, () => this._goToMainScene());
-        this._scene = cutScene;
-        await cutScene.load();
+        this._cutScene = new CutScene(this._engine, () => this._goToMainScene());
+        this._scene = this._cutScene;
+        await this._cutScene.load();
         this._state = State.CUT_SCENE;
 
-        this._mainScenePromise = this._loadMainScene();
-        await this._mainScenePromise;
+        this._mainScene = await this._loadMainScene();
 
         this._engine.hideLoadingUI();
     }
@@ -128,18 +129,23 @@ class App {
 
         const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas);
         await mainScene.load();
+        console.log("Main Scene loaded");
         return mainScene;
     }
 
     private async _goToMainScene(): Promise<void> {
-
+        await new Promise(resolve => setTimeout(resolve, 500)); 
         this._engine.displayLoadingUI();
-
+    
         if (this._scene) {
             this._scene.dispose();
         }
 
-        this._scene = await this._mainScenePromise;
+        if(this._state === State.SCENE_0) { 
+            this._mainScene = await this._loadMainScene();
+        }
+
+        this._scene = this._mainScene;
         this._state = State.MAIN_SCENE;
         this._engine.hideLoadingUI();
     }
@@ -156,9 +162,9 @@ class App {
             this._scene.dispose();
         }
 
-        const scene0 = new Scene0(this._engine);
-        this._scene = scene0;
-        await scene0.load();
+        this._scene0 = new Scene0(this._engine, () => this._goToMainScene());
+        this._scene = this._scene0;
+        await this._scene0.load();
         this._state = State.SCENE_0;
 
         this._engine.hideLoadingUI();
