@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, TransformNode, KeyboardEventTypes } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, TransformNode, Sound } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 
 export class Mars {
@@ -9,6 +9,7 @@ export class Mars {
     private _dialogueText: TextBlock;
     private _portal: Mesh;
     private goToMainScene: () => void;
+    private _backgroundMusic: Sound
 
     constructor(scene: Scene, playerMesh: Mesh, goToMainScene: () => void) {
         this._scene = scene;
@@ -19,12 +20,21 @@ export class Mars {
         this.createMessageDialogue();
         this.findAntennes();
         this._setupProximityDetection();
+        this.startMusic();
+    }
+
+    private startMusic() {
+        this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/marsScene.mp3", this._scene, () => {
+            this._backgroundMusic.loop = true;
+            this._backgroundMusic.setVolume(0.2);
+            this._backgroundMusic.play();
+        });
     }
 
     private createMessageDialogue() {
         this._dialogueText = new TextBlock();
-        this._dialogueText.fontFamily = "EB Garamond";  // Typographie unique
-        this._dialogueText.fontSize = 20;
+        this._dialogueText.fontFamily = "Cousine";
+        this._dialogueText.fontSize = 15;
         this._dialogueText.color = "white";
         this._dialogueText.text = "";
         this._dialogueText.verticalAlignment = Control.VERTICAL_ALIGNMENT_CENTER;
@@ -50,11 +60,11 @@ export class Mars {
     }
 
     private _antenneMessages: string[] = [
-        "Signal reçu... mais il semble incomplet. Cette première antenne ne transmet que des fragments de données.",
-        "L'atmosphère de Mars est étrange... je capte des signaux, mais la deuxième antenne semble avoir des interférences.",
-        "Un écho résonne dans l'immensité. La troisième antenne envoie un message déformé, mais il y a un indice crucial.",
-        "Les coordonnées sont floues. La quatrième antenne semble être perturbée, mais je suis presque sûr que c'est important.",
-        "Une perturbation dans le signal... la cinquième antenne est en danger. Quelque chose approche, il est peut-être trop tard pour partir."
+        "[SIGNAL_REC] >> ERROR: Transmission incomplete...\n[ANT 1] >> Data corrupted. Receiving... **In--férenc-- détecté--.**\n[ATTEMPTING RECONNECT...] >> **C-tte pre--i-re an---enne ne tran--met que d-s fr--ments de don-é--s.**\n[WARNING] >> Signal degradation detected. Possible interference.",
+        ".--- . / -.-. .- .--. - . / -.. . ... /\n ... .. --. -. .- ..- -..- .-.-.- .-.-.- .-.-.- /\n -- .- .. ... / .-.. .- / -.. . ..- -..- .. . -- . /\n .- -. - . -. -. . / . ... - / .--. . .-. - ..- .-. -... . . .-.-.-",
+        "M’jnnfotjuf ftu sfnqmjf e’vo fdip gbjcmf.\nMb uspjtjfnf boufoof usbotnfu vo nfttbhf fsspof,\nnbjt dfsubjot nput tpou fodpsf bvejcmft.",
+        "12-'-1-20-13-15-19-16-8-5-18-5-0-4-5-0-13-1-18-19\n5-19-20-0-5-20-18-1-14-7-5-.-.-.-12-1-0-17-21-1-20-18-9-5-13-5\n1-14-20-5-14-14-5-19-5-13-2-12-5-0-1-22-15-9-18\n4-5-19-0-9-14-20-5-18-6-5-18-5-14-3-5-19-.",
+        "Señalpi huk disturbio... pichqa kaq antena\n peligropi kachkan. Yaqapaschá tardeña ripunapaq."
     ];
 
     public _setupProximityDetection(): void {

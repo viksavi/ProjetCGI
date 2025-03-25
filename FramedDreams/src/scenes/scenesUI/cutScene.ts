@@ -1,5 +1,5 @@
 import { AbstractScene } from "../baseScenes/abstractScene";
-import { Engine, FreeCamera, Vector3, Color4, Animation } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, Color4, Animation, Sound } from "@babylonjs/core";
 import { Control, TextBlock, Rectangle } from "@babylonjs/gui";
 
 // Classe pour gérer le dialogue
@@ -31,6 +31,7 @@ export class CutScene extends AbstractScene {
     private _nextSceneButtonContainer: Rectangle;
     private _dialogueManager: DialogueManager;
     private _dialogueText: TextBlock;
+    private _backgroundMusic: Sound;
 
     constructor(engine: Engine, goToMainScene: () => void) {
         super(engine);
@@ -111,6 +112,12 @@ export class CutScene extends AbstractScene {
         this._showNextSentence();
 
         await this._scene.whenReadyAsync();
+
+        this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/cutScene.mp3", this._scene, () => {
+            this._backgroundMusic.loop = true;
+            this._backgroundMusic.setVolume(0.2);
+            this._backgroundMusic.play();
+        });
     }
 
     private _showNextSentence = (): void => {
