@@ -13,12 +13,16 @@ export class MainScene extends AbstractModelScene {
     private _canvas: HTMLCanvasElement;
     private _camera: FreeCamera;
     private _guiHandler: GUIHouse;
+    private _camPosition: Vector3;
+    private _camTarget: Vector3;
+    private _marsVisited: boolean;
 
-    constructor(engine: Engine, goToScene0: () => void, canvas: HTMLCanvasElement) {
+    constructor(engine: Engine, goToScene0: () => void, canvas: HTMLCanvasElement, marsVisited: boolean) {
         super(engine);
         this._goToScene0 = goToScene0;
         this._canvas = canvas;
         this._guiHandler = new GUIHouse(this.ui, this._scene);
+        this._marsVisited = marsVisited;
     }
 
     private _goToScene0: () => void; //dependency injection
@@ -35,10 +39,15 @@ export class MainScene extends AbstractModelScene {
         this.initCameraControl(this._canvas, this._camera);
         await this.environment.load();
         this.environment.enableCollisions();
-        this._house = new House(this._scene, this._camera, this._goToScene0);
+        this._house = new House(this._scene, this._camera, this._goToScene0, this._marsVisited);
         this._onSceneReady();
+        if(!this._marsVisited) {
+            this._guiHandler._showNextSentence();
+        }
+    }
 
-        this._guiHandler._showNextSentence();
+    public showBook() {
+        this._house.showBook();
     }
 
     public dispose(): void {
@@ -59,7 +68,7 @@ export class MainScene extends AbstractModelScene {
         this._camera = new FreeCamera("camera1", new Vector3(-1, 4, 4), this._scene);
         this._camera.setTarget(new Vector3(-5, 1, 10));
         this._camera.speed = 0.6;
-        this._camera.inertia = 0.5; 
+        this._camera.inertia = 0.5;
         this._camera.angularSensibility = 2000;
         this._camera.attachControl(this._canvas, true);
         this._camera.keysUp.push(87);   // W

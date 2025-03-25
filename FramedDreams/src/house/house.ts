@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, FreeCamera,  HighlightLayer, Color3 } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, FreeCamera,  HighlightLayer, Color3, Animation } from "@babylonjs/core";
 import { Door } from "./door"
 import { Light } from "./light"
 import { Tableau1 } from "./tableau1"
@@ -13,8 +13,10 @@ export class House {
     private _glassesVisible: boolean = false;
     private _glassesOn: boolean = false;
     private _tableau: Tableau1;
+    private _marsVisited: boolean;
 
-    constructor(scene: Scene, camera: FreeCamera, goToScene0: () => void) {
+    constructor(scene: Scene, camera: FreeCamera, goToScene0: () => void, marsVisited: boolean) {
+        this._marsVisited = marsVisited;
         this._scene = scene;
         this._camera = camera;
         this._light = new Light(this._scene);
@@ -23,6 +25,7 @@ export class House {
         this._goToScene0 = goToScene0;
         this._tableau = new Tableau1(this._scene);
         this._highlightLayer = new HighlightLayer("highlight", this._scene);
+        this.defineCamPosition();
     }
 
     private _goToScene0: () => void;
@@ -33,6 +36,32 @@ export class House {
                 this._doors.push(new Door(mesh as Mesh));
             }
         });
+    }
+
+    public showBook() {
+        if(this._marsVisited) {
+            var book = this._scene.getMeshByName("OBJ_Book");
+            book.isVisible = true;
+            book.visibility = 0; 
+            setTimeout(() => {}, 5000);
+            let currentVisibility = 0;
+            const fadeInterval = 50; 
+            const fadeIncrement = 0.05; 
+            let fadeTimer = 0;
+
+            const fadeEffect = () => {
+                currentVisibility += fadeIncrement;
+                book.visibility = currentVisibility;
+
+                if (currentVisibility >= 1) {
+                    book.visibility = 1; 
+                } else {
+                    fadeTimer = setTimeout(fadeEffect, fadeInterval); 
+                }
+            };
+
+            setTimeout(fadeEffect, 1000);
+        }
     }
 
     public onPointerDownEvts() {
@@ -48,6 +77,7 @@ export class House {
                     this._glassesOn = !this._glassesOn;
                 }
                 else if(pickedMesh && this._glassesOn && pickedMesh === this._tableau.getTableau1()) {
+                    this._marsVisited = true;
                     this._goToScene0();
                 }
                 else if(pickedMesh) {
@@ -111,5 +141,15 @@ export class House {
             mesh.isVisible = false;
             console.log(mesh);
         });
+    }
+
+    private defineCamPosition() {
+        if(!this._marsVisited) {  
+            this._camera.position = new Vector3(-1, 4, 4);
+            this._camera.target = new Vector3(-5, 1, 10);
+        } else {
+            this._camera.position = new Vector3(-9.359203794901253, 1.413385730335557, 6.270602252074229);
+            this._camera.target = new Vector3(-3.6589336152389382, -3.643423967159632, 7.9839609895837285);
+        }
     }
 }

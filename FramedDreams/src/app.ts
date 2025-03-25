@@ -23,6 +23,7 @@ class App {
     private _cutScene: CutScene;
     private _mainScene: MainScene;
     private _scene0: Scene0;
+    private _marsVisited: boolean = false;
 
     constructor() {
         this._canvas = this._createCanvas();
@@ -127,7 +128,7 @@ class App {
 
     private async _loadMainScene(): Promise<MainScene> {
 
-        const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas);
+        const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas, this._marsVisited);
         await mainScene.load();
         console.log("Main Scene loaded");
         return mainScene;
@@ -142,12 +143,16 @@ class App {
         }
 
         if(this._state === State.SCENE_0) { 
+            this._marsVisited = true;
             this._mainScene = await this._loadMainScene();
         }
 
         this._scene = this._mainScene;
         this._state = State.MAIN_SCENE;
         this._engine.hideLoadingUI();
+        if(this._marsVisited) {
+            this._mainScene.showBook();
+        }
     }
 
     private async _goToScene0(): Promise<void> {
