@@ -9,7 +9,9 @@ export class Mars {
     private _dialogueText: TextBlock;
     private _portal: Mesh;
     private goToMainScene: () => void;
-    private _backgroundMusic: Sound
+    private _backgroundMusic: Sound;
+    private _antenneMusic: Sound;
+    private _isAntenneMusicPlaying: boolean = false;  // Nouvelle variable
 
     constructor(scene: Scene, playerMesh: Mesh, goToMainScene: () => void) {
         this._scene = scene;
@@ -20,13 +22,30 @@ export class Mars {
         this.createMessageDialogue();
         this.findAntennes();
         this._setupProximityDetection();
-        this.startMusic();
+        //this.startMusic();
+    }
+
+    private _antenneSounds: string[] = [
+        "../../../sounds/antenne1.mp3",
+        "../../../sounds/antenne2.mp3",
+        "../../../sounds/antenne3.mp3",
+        "../../../sounds/antenne4.mp3",
+        "../../../sounds/antenne5.mp3"
+    ];
+
+    private startAntenneSounds(sound: string) {
+        this._antenneMusic = new Sound("antenneMusic", sound, this._scene, () => {
+            this._antenneMusic.loop = true;
+            this._antenneMusic.setVolume(0.1);
+            this._antenneMusic.play();
+            this._isAntenneMusicPlaying = true;
+        });
     }
 
     private startMusic() {
         this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/marsScene.mp3", this._scene, () => {
             this._backgroundMusic.loop = true;
-            this._backgroundMusic.setVolume(0.2);
+            this._backgroundMusic.setVolume(0.3);
             this._backgroundMusic.play();
         });
     }
@@ -46,14 +65,16 @@ export class Mars {
 
     private findAntennes() {
         const parentNames = ["antenne1", "antenne2", "antenne3", "antenne4", "antenne5"];
-        this._antennes = []; 
+        this._antennes = [];
 
         parentNames.forEach(name => {
             const parent = this._scene.getNodeByName(name) as TransformNode;
             if (parent) {
                 const meshes = parent.getChildMeshes().filter(child => child instanceof Mesh) as Mesh[];
                 this._antennes.push(meshes);
+                console.log("Antenne trouvée :", name);
             } else {
+                console.error(`Erreur : L'antenne ${name} n'a pas été trouvée !`);
                 this._antennes.push([]);
             }
         });
@@ -70,35 +91,51 @@ export class Mars {
     public _setupProximityDetection(): void {
         this._scene.onBeforeRenderObservable.add(() => {
             if (!this._playerMesh) return;
-    
+
             let closestDistance = Infinity;
             let closestMessage = "";
-    
+            let closestSound = "";
+            let closestIndex = -1;
+
             this._antennes.forEach((antenneGroup, index) => {
-                antenneGroup.forEach(mesh => {
-                    let distance = Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition());
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestMessage = this._antenneMessages[index];  // Récupère le message de l'antenne la plus proche
-                    }
-                });
+                if (antenneGroup.length > 0) {
+                    antenneGroup.forEach(mesh => {
+                        let distance = Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition());
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestMessage = this._antenneMessages[index];
+                            closestSound = this._antenneSounds[index];
+                            closestIndex = index;  // Stocker l'index de l'antenne la plus proche
+                        }
+                    });
+                } else {
+                    console.warn(`L'antenne ${index + 1} est mal initialisée ou n'a pas d'enfants`);
+                }
             });
-    
+
             if (closestDistance < 1.5) {
                 this.showText(closestMessage);
+            } else if (closestDistance < 2 && !this._isAntenneMusicPlaying) {
+                this.startAntenneSounds(closestSound);
             } else {
-                this.hideText();
+                 this.hideText();
+                if (this._antenneMusic) {
+                   this._antenneMusic.stop();
+                   this._antenneMusic.dispose();
+                   this._isAntenneMusicPlaying= false  //Indiquer qu'on a enlevé la musique
+                }
+
             }
         });
 
         this._scene.onPointerDown = (evt, pickInfo) => {
             if (pickInfo.hit) {
                 const pickedMesh = pickInfo.pickedMesh;
-        
-                if (pickedMesh && pickedMesh === this._portal) { 
+
+                if (pickedMesh && pickedMesh === this._portal) {
                     this.goToMainScene();
                 }
-                
+
             }
         };
     }
