@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, TransformNode } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, TransformNode, Sound } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 
 export class Mars {
@@ -7,6 +7,7 @@ export class Mars {
     private _antennes: Mesh[][] = [];
     private _advancedTexture: AdvancedDynamicTexture;
     private _dialogueText: TextBlock;
+    private _backgroundMusic: Sound
 
     constructor(scene: Scene, playerMesh: Mesh) {
         this._scene = scene;
@@ -16,6 +17,15 @@ export class Mars {
         this.createMessageDialogue();
         this.findAntennes();
         this._setupProximityDetection();
+        this.startMusic();
+    }
+
+    private startMusic() {
+        this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/marsScene.mp3", this._scene, () => {
+            this._backgroundMusic.loop = true;
+            this._backgroundMusic.setVolume(0.2);
+            this._backgroundMusic.play();
+        });
     }
 
     private createMessageDialogue() {
