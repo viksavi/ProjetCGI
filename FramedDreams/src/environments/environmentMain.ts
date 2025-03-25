@@ -32,7 +32,7 @@ export class EnvironmentMain extends Environment {
                     mesh.material.reflectionTexture = null; 
                     mesh.material.environmentIntensity = 0; 
                 }
-                if (mesh.name.includes("Collision") || mesh.name === "Martian_tableau") {
+                if (mesh.name.includes("Collision") || mesh.name === "Martian_tableau" || mesh.name === "OBJ_Book") {
                     mesh.isVisible = false;
                 }
             }
