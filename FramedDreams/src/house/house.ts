@@ -65,7 +65,7 @@ export class House {
     }
 
     public onPointerDownEvts() {
-        this._scene.onPointerDown = (evt, pickInfo) => {
+        this._scene.onPointerDown = (_evt, pickInfo) => {
             if (pickInfo.hit) {
                 const pickedMesh = pickInfo.pickedMesh;
         
