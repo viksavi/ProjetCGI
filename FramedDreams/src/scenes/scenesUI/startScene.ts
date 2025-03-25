@@ -1,10 +1,11 @@
 import { AbstractScene } from "../baseScenes/abstractScene";
-import { Engine, FreeCamera, Vector3, Color4, ParticleSystem, Texture } from "@babylonjs/core";
+import { Engine, FreeCamera, Vector3, Color4, ParticleSystem, Texture, Sound } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Control, TextBlock } from "@babylonjs/gui";
 
 export class StartScene extends AbstractScene {
 
     private _goToCutScene: () => void;
+    private _backgroundMusic: Sound;
 
     constructor(engine: Engine, goToCutScene: () => void) {
         super(engine);
@@ -95,6 +96,12 @@ export class StartScene extends AbstractScene {
         });
 
         await this._scene.whenReadyAsync();
+
+        this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/startScene.mp3", this._scene, () => {
+            this._backgroundMusic.loop = true;
+            this._backgroundMusic.setVolume(0.2);
+            this._backgroundMusic.play();
+        });
     }
 
     public dispose(): void {
