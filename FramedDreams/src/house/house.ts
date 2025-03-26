@@ -96,10 +96,12 @@ export class House {
                 this._highlightLayer.removeMesh(this._glasses[0]);
                 this._glassesVisible = false;
             }
-            if(!this._light.getLightOn() && this._glassesOn) {
+            if(!this._light.getLightOn() && this._glassesOn && !this._marsVisited) {
                 this._tableau.lightUpTableau();
-            } else if(this._light.getLightOn()) {
+            } else if(this._light.getLightOn() && !this._marsVisited) {
                 this._tableau.lightOffTableau();	
+            } else {
+                this._tableau.showTableau();
             }
         });
     }

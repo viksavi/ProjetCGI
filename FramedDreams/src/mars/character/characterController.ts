@@ -180,6 +180,10 @@ export class Player extends TransformNode {
         return this.camera;
     }
 
+    public getInputs(): SimpleInput {      
+        return  this._input;
+    }
+
     private _updateCamera(): void {
         const smoothness = 0.5;
 

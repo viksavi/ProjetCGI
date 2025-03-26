@@ -1,4 +1,5 @@
-import { Scene, Mesh, Vector3, TransformNode, Sound } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, TransformNode, Sound, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { Player } from "./character/characterController";   
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 
 export class Mars {
@@ -12,17 +13,25 @@ export class Mars {
     private _backgroundMusic: Sound;
     private _antenneMusic: Sound;
     private _antenneMusicPlaying: boolean = false;
+    private _antenneOrder: number[] = [0, 1, 2, 3, 4];
+    private _currentAntenneIndex: number = 0;       
+    private _antenneActivated: boolean[] = []; 
+    private _lasers: Mesh[] = []; 
+    private _gateOpened: boolean = false;
+    private _isErrorMessageVisible: boolean = false;
 
-    constructor(scene: Scene, playerMesh: Mesh, goToMainScene: () => void) {
+    constructor(scene: Scene, player: Player, goToMainScene: () => void) {
         this._scene = scene;
-        this._playerMesh = playerMesh;
+        this._playerMesh = player.mesh;
         this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
         this.goToMainScene = goToMainScene;
-        this._portal = this._scene.getMeshByName("gate_complex_primitive1") as Mesh;
+        this._portal = this._scene.getMeshByName("gate_light") as Mesh;
         this.createMessageDialogue();
         this.findAntennes();
         this._setupProximityDetection();
         this.startMusic();
+        this._antenneActivated = new Array(this._antennes.length).fill(false);
+        this.findLasers();
     }
 
     private startAntenneSounds() {
@@ -42,6 +51,17 @@ export class Mars {
             this._backgroundMusic.setVolume(0.2);
             this._backgroundMusic.play();
         });
+    }
+
+    private findLasers() {
+        for(let i = 0; i <= 4; i++) {
+            const laser = this._scene.getMeshByName(`laser${i+1}`) as Mesh;
+            if(laser) {
+                this._lasers.push(laser);
+            } else {
+                console.warn(`Le laser ${i} n'a pas été trouvé`);
+            }
+        }
     }
 
     private stopMusic() {
@@ -88,10 +108,10 @@ export class Mars {
     ];
 
     public _setupProximityDetection(): void {
+        let closestDistance = Infinity;
         this._scene.onBeforeRenderObservable.add(() => {
             if (!this._playerMesh) return;
-
-            let closestDistance = Infinity;
+            closestDistance = Infinity;
             let closestMessage = "";
 
             this._antennes.forEach((antenneGroup, index) => {
@@ -107,13 +127,19 @@ export class Mars {
                     console.warn(`L'antenne ${index + 1} est mal initialisée ou n'a pas d'enfants`);
                 }
             });
-
-            if (closestDistance < 1.5) {
-                this.showText(closestMessage);
-                this.startAntenneSounds();
-            } else {
-                this.hideText();
-                this.stopMusic();
+            if(!this._isErrorMessageVisible) {
+                if (closestDistance < 1.5) {
+                    if(!this._antenneActivated[this._currentAntenneIndex]) {
+                        this.showText(closestMessage + `\nClick on the antenna to activate it`);
+                        this.startAntenneSounds();
+                    } else {
+                        this.showText(closestMessage);
+                        this.stopMusic();
+                    }
+                } else {
+                    this.hideText();
+                    this.stopMusic();
+                }
             }
         });
 
@@ -121,12 +147,47 @@ export class Mars {
             if (pickInfo.hit) {
                 const pickedMesh = pickInfo.pickedMesh;
 
-                if (pickedMesh && pickedMesh === this._portal) {
+                if (pickedMesh && pickedMesh === this._portal && this._gateOpened) {
                     this.goToMainScene();
+                }
+                if(closestDistance < 1.5) {
+                    if(!this._antenneActivated[this._currentAntenneIndex]) {
+                        const currentAntenneIndexInOrder = this._antenneOrder[this._currentAntenneIndex];
+
+                        if(pickedMesh && this._antennes[currentAntenneIndexInOrder].some(mesh => mesh === pickedMesh)) {
+                            this.activateCurrentAntenne();
+                        } else {
+                            this.showText("ERRROR! You must activate the antennas in order!");
+                            this._isErrorMessageVisible = true; 
+                            setTimeout(() => {
+                                this._isErrorMessageVisible = false;
+                                this.hideText();
+                            }, 3000);
+                        }
+                    }
                 }
 
             }
         };
+    }
+
+    private activateCurrentAntenne(): void {
+        const currentAntenneIndexInOrder = this._antenneOrder[this._currentAntenneIndex];
+
+        if (!this._antenneActivated[currentAntenneIndexInOrder]) {
+            this._antenneActivated[currentAntenneIndexInOrder] = true;  
+            this._lasers[currentAntenneIndexInOrder].isVisible = true;
+            
+            this._currentAntenneIndex++;
+
+            if (this._currentAntenneIndex >= this._antenneOrder.length) {
+                this._gateOpened = true;
+                this._portal.isVisible = true;
+                this._scene.getLightByName("hemiLight").intensity = 0;
+                this._scene.getLightByName("direcLight").intensity = 0.7;
+                this.showText("Gate is opened!");
+            }
+        } 
     }
 
     private showText(message: string): void {

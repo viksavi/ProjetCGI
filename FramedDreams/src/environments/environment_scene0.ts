@@ -18,7 +18,7 @@ export class EnvironmentScene0 extends Environment {
         // Configuration des meshes de l'environnement
         this.assets.meshes.forEach((mesh) => {
             mesh.checkCollisions = true;
-            if (mesh.name.toLowerCase().includes("mur")) {
+            if (mesh.name.toLowerCase().includes("mur") || mesh.name.toLowerCase().includes("laser") || mesh.name === "gate_light") {
                 mesh.isVisible = false;
             }
         });
