@@ -9,7 +9,9 @@ export class Mars {
     private _dialogueText: TextBlock;
     private _portal: Mesh;
     private goToMainScene: () => void;
-    private _backgroundMusic: Sound
+    private _backgroundMusic: Sound;
+    private _antenneMusic: Sound;
+    private _antenneMusicPlaying: boolean = false;
 
     constructor(scene: Scene, playerMesh: Mesh, goToMainScene: () => void) {
         this._scene = scene;
@@ -23,12 +25,30 @@ export class Mars {
         this.startMusic();
     }
 
+    private startAntenneSounds() {
+        if (this._antenneMusicPlaying) return;
+
+        this._antenneMusicPlaying = true;
+        this._antenneMusic = new Sound("antenneMusic", "../../../sounds/radioInterference.mp3", this._scene, () => {
+            this._antenneMusic.loop = true;
+            this._antenneMusic.setVolume(0.15);
+            this._antenneMusic.play();
+        });
+    }
+
     private startMusic() {
         this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/marsScene.mp3", this._scene, () => {
             this._backgroundMusic.loop = true;
             this._backgroundMusic.setVolume(0.2);
             this._backgroundMusic.play();
         });
+    }
+
+    private stopMusic() {
+        if (this._antenneMusic) {
+            this._antenneMusic.stop();
+            this._antenneMusicPlaying = false;
+        }
     }
 
     private createMessageDialogue() {
@@ -46,7 +66,7 @@ export class Mars {
 
     private findAntennes() {
         const parentNames = ["antenne1", "antenne2", "antenne3", "antenne4", "antenne5"];
-        this._antennes = []; 
+        this._antennes = [];
 
         parentNames.forEach(name => {
             const parent = this._scene.getNodeByName(name) as TransformNode;
@@ -70,35 +90,41 @@ export class Mars {
     public _setupProximityDetection(): void {
         this._scene.onBeforeRenderObservable.add(() => {
             if (!this._playerMesh) return;
-    
+
             let closestDistance = Infinity;
             let closestMessage = "";
-    
+
             this._antennes.forEach((antenneGroup, index) => {
-                antenneGroup.forEach(mesh => {
-                    let distance = Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition());
-                    if (distance < closestDistance) {
-                        closestDistance = distance;
-                        closestMessage = this._antenneMessages[index];  // Récupère le message de l'antenne la plus proche
-                    }
-                });
+                if (antenneGroup.length > 0) {
+                    antenneGroup.forEach(mesh => {
+                        let distance = Vector3.Distance(this._playerMesh.position, mesh.getAbsolutePosition());
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestMessage = this._antenneMessages[index];
+                        }
+                    });
+                } else {
+                    console.warn(`L'antenne ${index + 1} est mal initialisée ou n'a pas d'enfants`);
+                }
             });
-    
+
             if (closestDistance < 1.5) {
                 this.showText(closestMessage);
+                this.startAntenneSounds();
             } else {
                 this.hideText();
+                this.stopMusic();
             }
         });
 
         this._scene.onPointerDown = (_evt, pickInfo) => {
             if (pickInfo.hit) {
                 const pickedMesh = pickInfo.pickedMesh;
-        
-                if (pickedMesh && pickedMesh === this._portal) { 
+
+                if (pickedMesh && pickedMesh === this._portal) {
                     this.goToMainScene();
                 }
-                
+
             }
         };
     }
