@@ -22,9 +22,9 @@ export class Mars {
         this.goToMainScene = goToMainScene;
         this._portal = this._scene.getMeshByName("gate_complex_primitive1") as Mesh;
 
-        const bookParent = this._scene.getMeshByName("book") as Mesh; // Récupérer le mesh du livre
+        const bookParent = this._scene.getMeshByName("book") as Mesh;
 
-        this._journal = new GUIJournal(scene, bookParent, playerMesh); // Initialiser le journal
+        this._journal = new GUIJournal(scene, bookParent, playerMesh);
 
         this.createMessageDialogue();
         this.findAntennes();
@@ -122,7 +122,6 @@ export class Mars {
                 this.hideText();
                 this.stopMusic();
             }
-            // Mettre à jour le journal
             const bookParent = this._scene.getMeshByName("book") as Mesh;
             this._journal.update(bookParent);
         });
