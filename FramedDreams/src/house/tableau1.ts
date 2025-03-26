@@ -36,6 +36,13 @@ export class Tableau1 {
         this._tableauBack.material = this._origMaterial;
     }
 
+    public showTableau() {
+        var normMaterial = new StandardMaterial("normalMaterial", this._scene);
+        normMaterial.diffuseTexture = new Texture("/textures/Martian.png", this._scene);
+        this._tableau1.isVisible = true;
+        this._tableau1.material = normMaterial;
+    }
+
     public getTableau1(): Mesh {
         return this._tableau1;
     }
