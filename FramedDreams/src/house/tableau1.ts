@@ -14,7 +14,7 @@ export class Tableau1 {
         this._tableauBack = this._scene.getMeshByName("OBJ_Picture_01") as Mesh;
         this._origMaterial = this._tableauBack.material as StandardMaterial;
         this._emmissiveMaterial = new StandardMaterial("emissiveMaterial", scene);
-        this._emmissiveMaterial.emissiveTexture = new Texture("/textures/Martian_emit.png", scene);
+        this._emmissiveMaterial.emissiveTexture = new Texture("/textures/Martian1_emit.png", scene);
         this._glowLayer = new GlowLayer("glow", this._scene);
         this._glowLayer.intensity = 0;
         this._glowLayer.addIncludedOnlyMesh(this._tableau1);
@@ -38,7 +38,7 @@ export class Tableau1 {
 
     public showTableau() {
         var normMaterial = new StandardMaterial("normalMaterial", this._scene);
-        normMaterial.diffuseTexture = new Texture("/textures/Martian.png", this._scene);
+        normMaterial.diffuseTexture = new Texture("/textures/Martian1.png", this._scene);
         this._tableau1.isVisible = true;
         this._tableau1.material = normMaterial;
     }
