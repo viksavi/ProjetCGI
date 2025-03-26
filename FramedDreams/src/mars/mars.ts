@@ -1,5 +1,6 @@
 import { Scene, Mesh, Vector3, TransformNode, Sound } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
+import { GUIJournal } from "../gui/guiJournal";
 
 export class Mars {
     private _scene: Scene;
@@ -12,6 +13,7 @@ export class Mars {
     private _backgroundMusic: Sound;
     private _antenneMusic: Sound;
     private _antenneMusicPlaying: boolean = false;
+    private _journal: GUIJournal; // Ajout du journal
 
     constructor(scene: Scene, playerMesh: Mesh, goToMainScene: () => void) {
         this._scene = scene;
@@ -19,6 +21,11 @@ export class Mars {
         this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
         this.goToMainScene = goToMainScene;
         this._portal = this._scene.getMeshByName("gate_complex_primitive1") as Mesh;
+
+        const bookParent = this._scene.getMeshByName("book") as Mesh; // Récupérer le mesh du livre
+
+        this._journal = new GUIJournal(scene, bookParent, playerMesh); // Initialiser le journal
+
         this.createMessageDialogue();
         this.findAntennes();
         this._setupProximityDetection();
@@ -83,7 +90,7 @@ export class Mars {
         "[SIGNAL_REC] >> ERROR: Transmission incomplete...\n[ANT 1] >> Data corrupted. Receiving... **In--férenc-- détecté--.**\n[ATTEMPTING RECONNECT...] >> **C-tte pre--i-re an---enne ne tran--met que d-s fr--ments de don-é--s.**\n[WARNING] >> Signal degradation detected. Possible interference.",
         ".--- . / -.-. .- .--. - . / -.. . ... /\n ... .. --. -. .- ..- -..- .-.-.- .-.-.- .-.-.- /\n -- .- .. ... / .-.. .- / -.. . ..- -..- .. . -- . /\n .- -. - . -. -. . / . ... - / .--. . .-. - ..- .-. -... . . .-.-.-",
         "M’jnnfotjuf ftu sfnqmjf e’vo fdip gbjcmf.\nMb uspjtjfnf boufoof usbotnfu vo nfttbhf fsspof,\nnbjt dfsubjot nput tpou fodpsf bvejcmft.",
-        "12-'-1-20-13-15-19-16-8-5-18-5-0-4-5-0-13-1-18-19\n5-19-20-0-5-20-18-1-14-7-5-.-.-.-12-1-0-17-21-1-20-18-9-5-13-5\n1-14-20-5-14-14-5-19-5-13-2-12-5-0-1-22-15-9-18\n4-5-19-0-9-14-20-5-18-6-5-18-5-14-3-5-19-.",
+        "12-'-1-20-13-15-19-16-8-5-18-5-0-4-5-0-13-1-18-19\n5-19-20-0-5-20-18-1-14-7-5-.-.-.-12-1-0-17-21-1-20-18-9-5-13-5\n1-14-20-5-14-14-5-19-5-13-2-12-5-0-1-22-15-9-18\n4-5-19-0-9-14-20-5-18-6-5-14-3-5-19-.",
         "Señalpi huk disturbio... pichqa kaq antena\n peligropi kachkan. Yaqapaschá tardeña ripunapaq."
     ];
 
@@ -115,6 +122,9 @@ export class Mars {
                 this.hideText();
                 this.stopMusic();
             }
+            // Mettre à jour le journal
+            const bookParent = this._scene.getMeshByName("book") as Mesh;
+            this._journal.update(bookParent);
         });
 
         this._scene.onPointerDown = (evt, pickInfo) => {
@@ -131,11 +141,11 @@ export class Mars {
 
     private showText(message: string): void {
         this._dialogueText.text = message;
-        this._dialogueText.alpha = 1;  // Affiche le texte
+        this._dialogueText.alpha = 1;
     }
 
     private hideText(): void {
         this._dialogueText.text = "";
-        this._dialogueText.alpha = 0;  // Cache le texte
+        this._dialogueText.alpha = 0;
     }
 }
