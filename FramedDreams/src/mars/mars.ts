@@ -28,7 +28,6 @@ export class Mars {
         this._advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
         this.goToMainScene = goToMainScene;
         this._portal = this._scene.getMeshByName("gate_light") as Mesh;
-        this._portal = this._scene.getMeshByName("gate_complex_primitive1") as Mesh;
 
         const bookParent = this._scene.getMeshByName("book") as Mesh; // Récupérer le mesh du livre
 
