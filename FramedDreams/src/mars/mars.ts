@@ -1,4 +1,4 @@
-import { Scene, Mesh, Vector3, TransformNode, Sound, ActionManager, ExecuteCodeAction } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, TransformNode, Sound, GlowLayer } from "@babylonjs/core";
 import { Player } from "./character/characterController";   
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 import { GUIJournal } from "../gui/guiJournal";
@@ -21,6 +21,7 @@ export class Mars {
     private _gateOpened: boolean = false;
     private _isErrorMessageVisible: boolean = false;
     private _journal: GUIJournal; // Ajout du journal
+    private _glowLayer: GlowLayer;
 
     constructor(scene: Scene, player: Player, goToMainScene: () => void) {
         this._scene = scene;
@@ -38,6 +39,11 @@ export class Mars {
         this.startMusic();
         this._antenneActivated = new Array(this._antennes.length).fill(false);
         this.findLasers();
+        this._glowLayer = new GlowLayer("glow", this._scene, {
+            mainTextureFixedSize: 1024,
+            blurKernelSize: 64,
+        });
+        this._glowLayer.intensity = 0.8;
     }
 
     private startAntenneSounds() {
@@ -191,8 +197,8 @@ export class Mars {
             if (this._currentAntenneIndex >= this._antenneOrder.length) {
                 this._gateOpened = true;
                 this._portal.isVisible = true;
-                this._scene.getLightByName("hemiLight").intensity = 0;
-                this._scene.getLightByName("direcLight").intensity = 0.7;
+                this._scene.getLightByName("hemiLight").intensity = 0.5;
+                this._scene.getLightByName("direcLight").intensity = 0.8;
                 this.showText("Gate is opened!");
             }
         } 
