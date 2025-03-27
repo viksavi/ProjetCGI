@@ -156,7 +156,7 @@ class App {
     }
 
     private async _goToScene0(): Promise<void> {
-        if (this._state === State.MAIN_SCENE && (this._scene as MainScene).player && (this._scene as MainScene).player.mesh) {
+        if (this._state === State.MAIN_SCENE) {
             const mainScene = this._scene as MainScene;
         }
 

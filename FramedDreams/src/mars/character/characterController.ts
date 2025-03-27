@@ -4,7 +4,7 @@ import { SimpleInput } from "./inputController";
 export class Player extends TransformNode {
     public camera;
     public scene: Scene;
-    private _input;
+    private _input: SimpleInput;
 
     public mesh: Mesh;
 
