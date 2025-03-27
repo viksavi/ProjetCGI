@@ -76,7 +76,7 @@ export class House {
                     this.putGlasses();
                     this._glassesOn = !this._glassesOn;
                 }
-                else if(pickedMesh && this._glassesOn && pickedMesh === this._tableau.getTableau1()) {
+                else if(pickedMesh && this._glassesOn && pickedMesh === this._tableau.getTableau1() && !this._marsVisited) {
                     this._marsVisited = true;
                     this._goToScene0();
                 }
