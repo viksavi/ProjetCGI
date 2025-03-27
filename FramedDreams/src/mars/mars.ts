@@ -3,26 +3,71 @@ import { Player } from "./character/characterController";
 import { AdvancedDynamicTexture, Control, TextBlock } from "@babylonjs/gui";
 import { GUIJournal } from "../gui/guiJournal";
 
+/**
+ * Classe représentant la scène Mars.
+ * Gère les antennes, les interactions, les dialogues, les lasers et la sortie vers la scène principale.
+ */
 export class Mars {
+    /** Scène Babylon.js */
     private _scene: Scene;
+
+    /** Mesh du joueur */
     private _playerMesh: Mesh;
+
+    /** Groupes de meshes représentant les antennes */
     private _antennes: Mesh[][] = [];
+
+    /** Interface utilisateur plein écran */
     public _advancedTexture: AdvancedDynamicTexture;
+
+    /** Texte affiché à l'écran pour les dialogues */
     private _dialogueText: TextBlock;
+
+    /** Portail (porte de sortie) */
     private _portal: Mesh;
+
+    /** Callback pour retourner à la scène principale */
     private goToMainScene: () => void;
+
+    /** Musique de fond */
     private _backgroundMusic: Sound;
+
+    /** Son joué lorsqu’on approche une antenne */
     private _antenneMusic: Sound;
+
+    /** Indique si la musique d’antenne est en cours de lecture */
     private _antenneMusicPlaying: boolean = false;
+
+    /** Ordre correct d’activation des antennes */
     private _antenneOrder: number[] = [0, 1, 2, 3, 4];
-    private _currentAntenneIndex: number = 0;       
+
+    /** Index de l’antenne attendue actuellement */
+    private _currentAntenneIndex: number = 0;
+
+    /** État d’activation de chaque antenne */
     private _antenneActivated: boolean[] = []; 
+
+    /** Meshes représentant les lasers activés par les antennes */
     private _lasers: Mesh[] = []; 
+
+    /** Indique si la porte est ouverte */
     private _gateOpened: boolean = false;
+
+    /** Indique si un message d’erreur est affiché */
     private _isErrorMessageVisible: boolean = false;
-    private _journal: GUIJournal; // Ajout du journal
+
+    /** Journal affiché au joueur */
+    private _journal: GUIJournal;
+
+    /** Effet de glow autour des objets lumineux */
     private _glowLayer: GlowLayer;
 
+    /**
+     * Crée une instance de la scène Mars.
+     * @param scene - Scène Babylon.js
+     * @param player - Joueur
+     * @param goToMainScene - Fonction de rappel pour revenir à la scène principale
+     */
     constructor(scene: Scene, player: Player, goToMainScene: () => void) {
         this._scene = scene;
         this._playerMesh = player.mesh;
@@ -46,6 +91,7 @@ export class Mars {
         this._glowLayer.intensity = 0.8;
     }
 
+    /** Démarre la musique des antennes si elle n’est pas déjà active */
     private startAntenneSounds() {
         if (this._antenneMusicPlaying) return;
 
@@ -57,6 +103,7 @@ export class Mars {
         });
     }
 
+    /** Joue la musique de fond de la scène Mars */
     private startMusic() {
         this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/marsScene.mp3", this._scene, () => {
             this._backgroundMusic.loop = true;
@@ -65,6 +112,7 @@ export class Mars {
         });
     }
 
+    /** Recherche les meshes des lasers dans la scène */
     private findLasers() {
         for(let i = 0; i <= 4; i++) {
             const laser = this._scene.getMeshByName(`laser${i+1}`) as Mesh;
@@ -76,6 +124,7 @@ export class Mars {
         }
     }
 
+    /** Arrête la musique des antennes */
     private stopMusic() {
         if (this._antenneMusic) {
             this._antenneMusic.stop();
@@ -83,6 +132,7 @@ export class Mars {
         }
     }
 
+    /** Crée la boîte de dialogue utilisée pour afficher les messages */
     private createMessageDialogue() {
         this._dialogueText = new TextBlock();
         this._dialogueText.fontFamily = "Cousine";
@@ -96,6 +146,7 @@ export class Mars {
         this._dialogueText.alpha = 0;
     }
 
+    /** Recherche tous les groupes d’antennes dans la scène */
     private findAntennes() {
         const parentNames = ["antenne1", "antenne2", "antenne3", "antenne4", "antenne5"];
         this._antennes = [];
@@ -111,6 +162,7 @@ export class Mars {
         });
     }
 
+    /** Messages affichés à l’approche des antennes */
     private _antenneMessages: string[] = [
         "[SIGNAL_REC] >> ERROR: Transmission incomplete...\n[ANT 1] >> Data corrupted. Receiving... **In--férenc-- détecté--.**\n[ATTEMPTING RECONNECT...] >> **C-tte pre--i-re an---enne ne tran--met que d-s fr--ments de don-é--s.**\n[WARNING] >> Signal degradation detected. Possible interference.",
         ".--- . / -.-. .- .--. - . / -.. . ... /\n ... .. --. -. .- ..- -..- .-.-.- .-.-.- .-.-.- /\n -- .- .. ... / .-.. .- / -.. . ..- -..- .. . -- . /\n .- -. - . -. -. . / . ... - / .--. . .-. - ..- .-. -... . . .-.-.-",
@@ -119,6 +171,9 @@ export class Mars {
         "Señalpi huk disturbio... pichqa kaq antena\n peligropi kachkan. Yaqapaschá tardeña ripunapaq."
     ];
 
+    /**
+     * Met en place les détecteurs de proximité, clics souris et interactions avec les antennes.
+     */
     public _setupProximityDetection(): void {
         let closestDistance = Infinity;
         this._scene.onBeforeRenderObservable.add(() => {
@@ -185,6 +240,7 @@ export class Mars {
         };
     }
 
+    /** Active l’antenne attendue, affiche un laser, et ouvre la porte si toutes les antennes sont activées */
     private activateCurrentAntenne(): void {
         const currentAntenneIndexInOrder = this._antenneOrder[this._currentAntenneIndex];
 
@@ -204,11 +260,16 @@ export class Mars {
         } 
     }
 
+    /**
+     * Affiche un texte à l’écran.
+     * @param message - Message à afficher
+     */
     private showText(message: string): void {
         this._dialogueText.text = message;
         this._dialogueText.alpha = 1;
     }
 
+    /** Masque le texte affiché à l’écran */
     private hideText(): void {
         this._dialogueText.text = "";
         this._dialogueText.alpha = 0;

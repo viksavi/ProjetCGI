@@ -4,16 +4,33 @@ import { Player } from "../../mars/character/characterController";
 import { EnvironmentScene0 } from "../../environments/environment_scene0";
 import { Mars } from "../../mars/mars";
 
+/**
+ * Scène 0 du jeu. Étend AbstractModelScene.
+ * Gère la caméra, les lumières, le joueur, l’environnement et les interactions avec Mars.
+ */
 export class Scene0 extends AbstractModelScene {
+    /** Scène d’environnement spécifique à Scene0 */
     public environment: EnvironmentScene0 = new EnvironmentScene0(this._scene);
+
+    /** Instance du joueur */
     public player: Player;
+
+    /** Données des assets chargés (mesh + animations) */
     public assets: any;
+
     private _hemiLight: HemisphericLight;
     private _direcLight: DirectionalLight;
     private _camera: UniversalCamera;
     private _mars: Mars;
-    private goToMainScene: () => void
 
+    /** Fonction de rappel pour revenir à la scène principale */
+    private goToMainScene: () => void;
+
+    /**
+     * Constructeur de Scene0.
+     * @param engine - Moteur Babylon.js
+     * @param goToMainScene - Callback pour revenir à la scène principale
+     */
     constructor(engine: Engine, goToMainScene: () => void) {
         super(engine);
         if (document.pointerLockElement) {
@@ -23,6 +40,9 @@ export class Scene0 extends AbstractModelScene {
         this.goToMainScene = goToMainScene;
     }
 
+    /**
+     * Charge tous les éléments de la scène : caméra, lumières, environnement, personnage, Mars.
+     */
     public async load(): Promise<void> {
         this._scene.clearColor = new Color4(0.1, 0.1, 0.3, 1);
 
@@ -37,6 +57,7 @@ export class Scene0 extends AbstractModelScene {
 
         await this.environment.load();
         await this._loadCharacterAssets();
+
         if (this.assets && this.assets.mesh && this.assets.animationGroups) {
             const playerParams = {
                 mesh: this.assets.mesh,
@@ -55,7 +76,10 @@ export class Scene0 extends AbstractModelScene {
         this._mars = new Mars(this._scene, this.player, this.goToMainScene);
     }
 
-
+    /**
+     * Charge les assets du personnage (astronaute).
+     * @returns Promesse contenant le mesh et les groupes d’animation
+     */
     protected async _loadCharacterAssets(): Promise<void> {
         const loadCharacter = async () => {
             const outer = MeshBuilder.CreateBox("outer", { width: 0.5, depth: 0.5, height: 1 }, this._scene);
@@ -92,6 +116,9 @@ export class Scene0 extends AbstractModelScene {
         this.assets = await loadCharacter(); // Assignation directe des assets
     }
 
+    /**
+     * Libère tous les éléments et ressources de la scène pour éviter les fuites mémoire.
+     */
     public dispose(): void {
         console.log("Disposing Scene0");
         this._scene.onBeforeRenderObservable.clear();
@@ -128,16 +155,21 @@ export class Scene0 extends AbstractModelScene {
                 animationGroup.dispose();
             });
         }
+
         if (this._scene.actionManager) {
             this._scene.actionManager.dispose();
         }
+
         if (this.environment) {
             this.environment.dispose();
         }
+
         if (this.player) {
             this.player.mesh.dispose();
         }
+
         this._scene.dispose();
         console.log("Scene0 Disposed");
     }
 }
+

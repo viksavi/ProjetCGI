@@ -5,10 +5,16 @@ import { EnvironmentMain } from "../../environments/environmentMain";
 import { GUIHouse } from "../../gui/guiHouse"; 
 import { House } from "../../house/house";
 
+/**
+ * Scène principale du jeu. Gère l'environnement, la maison, la caméra, et les interactions utilisateur.
+ */
 export class MainScene extends AbstractModelScene { 
+    /** Environnement principal de la scène */
     public environment: EnvironmentMain = new EnvironmentMain(this._scene);
-    public player: Player;
+
+    /** Données des assets chargés (non typées ici) */
     public assets: any;
+
     private _house: House;
     private _canvas: HTMLCanvasElement;
     private _camera: FreeCamera;
@@ -17,6 +23,18 @@ export class MainScene extends AbstractModelScene {
     private _camTarget: Vector3;
     private _marsVisited: boolean;
 
+    /**
+     * Fonction de rappel pour changer vers Scene0 (injectée)
+     */
+    private _goToScene0: () => void;
+
+    /**
+     * Constructeur de la scène principale.
+     * @param engine - Moteur Babylon.js
+     * @param goToScene0 - Fonction callback pour passer à Scene0
+     * @param canvas - Canvas HTML pour attacher les contrôles
+     * @param marsVisited - Booléen indiquant si Mars a déjà été visité
+     */
     constructor(engine: Engine, goToScene0: () => void, canvas: HTMLCanvasElement, marsVisited: boolean) {
         super(engine);
         this._goToScene0 = goToScene0;
@@ -25,8 +43,9 @@ export class MainScene extends AbstractModelScene {
         this._marsVisited = marsVisited;
     }
 
-    private _goToScene0: () => void; //dependency injection
-
+    /**
+     * Charge et initialise la scène : environnement, caméra, maison, GUI.
+     */
     public async load(): Promise<any> {
         this._scene.clearColor = new Color4(0.01568627450980392, 0.01568627450980392, 0.20392156862745098);
         this.createCamera();
@@ -41,29 +60,44 @@ export class MainScene extends AbstractModelScene {
         this.environment.enableCollisions();
         this._house = new House(this._scene, this._camera, this._goToScene0, this._marsVisited);
         this._onSceneReady();
-        if(!this._marsVisited) {
+        if (!this._marsVisited) {
             this._guiHandler._showNextSentence();
         }
     }
 
+    /**
+     * Affiche le livre dans la maison (si Mars a été visité).
+     */
     public showBook() {
         this._house.showBook();
     }
 
+    /**
+     * Détruit les contrôles de caméra et libère la scène.
+     */
     public dispose(): void {
         this.disposeCameraControl();
         this._scene.dispose();
     }
 
+    /**
+     * Change vers Scene0 après avoir libéré la scène actuelle.
+     */
     public goToScene0() { 
         this._scene.dispose(); 
         this._goToScene0();
     }
 
+    /**
+     * Initialise les interactions de la maison (clics, événements).
+     */
     private _onSceneReady(): void {
         this._house.onPointerDownEvts();
     }
 
+    /**
+     * Crée la caméra libre (FreeCamera) avec les contrôles clavier, collisions et gravité.
+     */
     private createCamera() {
         this._camera = new FreeCamera("camera1", new Vector3(-1, 4, 4), this._scene);
         this._camera.setTarget(new Vector3(-5, 1, 10));
@@ -89,6 +123,9 @@ export class MainScene extends AbstractModelScene {
         (this._camera as any).slopFactor = 1.5;
     }
 
+    /**
+     * Supprime tous les contrôles liés à la souris et au pointer lock.
+     */
     private disposeCameraControl(): void {
         if (document.pointerLockElement === this._canvas) {
             document.exitPointerLock();
@@ -100,6 +137,9 @@ export class MainScene extends AbstractModelScene {
         this._canvas.removeEventListener("contextmenu", this.contextMenu);
     }
 
+    /**
+     * Gère l'entrée utilisateur pour activer le pointer lock au clic central.
+     */
     private lockPointer = (event: MouseEvent) => {
         const margin = 5;
         const canvas = this._canvas;
@@ -117,16 +157,27 @@ export class MainScene extends AbstractModelScene {
         }
     };
 
+    /**
+     * Callback appelé lorsque le pointer lock est perdu.
+     */
     private pointerLockChange = () => {
         if (document.pointerLockElement !== this._canvas) {
             console.log("Pointer Lock lost");
         }
     };
 
+    /**
+     * Empêche l'affichage du menu contextuel par clic droit sur le canvas.
+     */
     private contextMenu = (evt: Event) => {
         evt.preventDefault();
     };
 
+    /**
+     * Initialise les contrôles manuels de la caméra (souris + pointer lock).
+     * @param canvas - Canvas HTML cible
+     * @param camera - Caméra contrôlée par l’utilisateur
+     */
     private initCameraControl(canvas: HTMLCanvasElement, camera: FreeCamera): void {
         const rotationSpeed = 0.005;
         const margin = 5; 
@@ -163,9 +214,7 @@ export class MainScene extends AbstractModelScene {
         });
     
         canvas.addEventListener("click", this.lockPointer);
-    
         document.addEventListener('pointerlockchange', this.pointerLockChange);
-    
         canvas.addEventListener("contextmenu", this.contextMenu);
     }
 

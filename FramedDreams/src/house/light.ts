@@ -1,13 +1,32 @@
-import { Scene, Mesh, Vector3,HemisphericLight, Color3,Material, GlowLayer, StandardMaterial } from "@babylonjs/core";
+import { Scene, Mesh, Vector3, HemisphericLight, Color3, Material, GlowLayer, StandardMaterial } from "@babylonjs/core";
 
+/**
+ * Classe représentant un système d’éclairage avec interrupteurs dans la scène.
+ * Permet d’activer/désactiver la lumière ambiante et d’appliquer un effet lumineux sur les interrupteurs.
+ */
 export class Light {
+    /** Scène Babylon.js */
     private _scene: Scene;
+
+    /** Liste des meshes représentant les interrupteurs (switches) */
     private _switches: Mesh[] = [];
+
+    /** Indique si la lumière est allumée */
     private _lightOn: boolean = true;
+
+    /** Effet Glow utilisé pour simuler l’interrupteur allumé */
     private _glowLayer: GlowLayer;
+
+    /** Matériau d’origine de l’interrupteur */
     private _origMaterial: Material;
+
+    /** Lumière hémisphérique principale de la scène */
     private _hemiLight: HemisphericLight;
 
+    /**
+     * Initialise le système d’éclairage dans la scène.
+     * @param scene - Scène Babylon.js
+     */
     constructor(scene: Scene) {
         this._scene = scene;
         this.findSwitches();
@@ -18,14 +37,25 @@ export class Light {
         this._hemiLight.diffuse = new Color3(0.82, 0.81, 0.78); 
     }
 
+    /**
+     * Retourne l’état actuel de la lumière.
+     * @returns true si la lumière est allumée
+     */
     public getLightOn(): boolean {
         return this._lightOn;   
     }
 
+    /**
+     * Retourne la liste des interrupteurs détectés dans la scène.
+     * @returns Tableau de meshes
+     */
     public getSwitches(): Mesh[] {
         return this._switches;
     }
 
+    /**
+     * Recherche tous les interrupteurs dans la scène (par nom de mesh).
+     */
     private findSwitches(): void {
         this._scene.meshes.forEach(mesh => {
             if (mesh.name.includes("OBJ_SwitchLight")) {
@@ -34,9 +64,14 @@ export class Light {
         });
     }
 
+    /**
+     * Change l’état de la lumière (on/off) et met à jour le visuel de l’interrupteur.
+     * @param meshSwitch - Le mesh représentant l’interrupteur à mettre à jour
+     */
     public changeLightState(meshSwitch): void {
-        if(!this._lightOn) {
-            if(this._glowLayer) {
+        if (!this._lightOn) {
+            // Allumer la lumière
+            if (this._glowLayer) {
                 this._glowLayer.dispose();
                 this._glowLayer = null;
                 meshSwitch.material.emissiveColor = new Color3(0, 0, 0);
@@ -45,6 +80,7 @@ export class Light {
             this._hemiLight.setEnabled(true);
             this._lightOn = true;
         } else {
+            // Éteindre la lumière
             this._hemiLight.setEnabled(false);
             const material = new StandardMaterial("glowMaterial", this._scene);
             this._glowLayer = new GlowLayer("glow", this._scene);
@@ -54,5 +90,4 @@ export class Light {
             this._lightOn = false;
         } 
     }
-
 }

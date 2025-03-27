@@ -26,20 +26,39 @@ class DialogueManager {
     }
 }
 
+/**
+ * Scène de type "Cut Scene" avec dialogues séquentiels et transition vers la scène principale.
+ */
 export class CutScene extends AbstractScene {
 
+    /** Conteneur du bouton de transition vers la scène suivante */
     private _nextSceneButtonContainer: Rectangle;
+
+    /** Gestionnaire de dialogues affichant les phrases une par une */
     private _dialogueManager: DialogueManager;
+
+    /** Zone de texte affichant le dialogue en cours */
     private _dialogueText: TextBlock;
+
+    /** Musique de fond de la scène */
     private _backgroundMusic: Sound;
 
+    /** Callback pour passer à la scène principale */
+    private _goToMainScene: () => void;
+
+    /**
+     * Constructeur de la CutScene.
+     * @param engine - Moteur Babylon.js
+     * @param goToMainScene - Fonction à appeler pour passer à la scène principale
+     */
     constructor(engine: Engine, goToMainScene: () => void) {
         super(engine);
         this._goToMainScene = goToMainScene;
     }
 
-    private _goToMainScene: () => void;
-
+    /**
+     * Charge tous les éléments de la scène : caméra, dialogues, UI, musique.
+     */
     public async load(): Promise<void> {
         this._scene.clearColor = new Color4(0, 0, 0, 1);
         let camera = new FreeCamera("camera1", new Vector3(0, 0, 0), this._scene);
@@ -79,13 +98,13 @@ export class CutScene extends AbstractScene {
         this.ui.addControl(this._nextSceneButtonContainer);
 
         // Style du container
-        this._nextSceneButtonContainer.background = "transparent"; // Fond transparent par défaut
+        this._nextSceneButtonContainer.background = "transparent";
 
         // Crée le TextBlock pour le texte
         const buttonText = new TextBlock();
         buttonText.fontFamily = "EB Garamond";
         buttonText.text = "Se réveiller";
-        buttonText.color = "rgba(255, 255, 255, 0.5)";  // Couleur initiale du texte
+        buttonText.color = "rgba(255, 255, 255, 0.5)";
         buttonText.shadowBlur = 0;
         buttonText.shadowColor = "rgba(255, 255, 255, 0.5)";
         buttonText.fontSize = 24;
@@ -120,6 +139,9 @@ export class CutScene extends AbstractScene {
         });
     }
 
+    /**
+     * Affiche progressivement chaque phrase du dialogue, puis le bouton.
+     */
     private _showNextSentence = (): void => {
         const sentence = this._dialogueManager.getNextSentence();
 
@@ -139,6 +161,9 @@ export class CutScene extends AbstractScene {
         }
     }
 
+    /**
+     * Lance l'animation de fondu pour faire apparaître le bouton de scène suivante.
+     */
     private _fadeInButton(): void {
         const animation = new Animation(
             "fadeInButton",
@@ -158,6 +183,12 @@ export class CutScene extends AbstractScene {
         this._scene.beginAnimation(this._nextSceneButtonContainer, 0, 30, false);
     }
 
+    /**
+     * Crée une animation de fondu d'opacité.
+     * @param name - Nom de l’animation
+     * @param from - Valeur de départ
+     * @param to - Valeur finale
+     */
     private _createFadeAnimation(name: string, from: number, to: number): Animation {
         const animation = new Animation(
             name,
@@ -175,21 +206,29 @@ export class CutScene extends AbstractScene {
         return animation;
     }
 
-    // Fonction pour le fondu en entrée
+    /**
+     * Anime l’apparition du texte (fondu entrant).
+     * @param onComplete - Callback appelé après animation
+     */
     private _fadeInText = (onComplete: () => void): void => {
-           const animation = this._createFadeAnimation("fadeIn", 0, 1);
+        const animation = this._createFadeAnimation("fadeIn", 0, 1);
         this._dialogueText.animations.push(animation);
         this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
     }
 
-    // Fonction pour le fondu en sortie
+    /**
+     * Anime la disparition du texte (fondu sortant).
+     * @param onComplete - Callback appelé après animation
+     */
     private _fadeOutText = (onComplete: () => void): void => {
-             const animation = this._createFadeAnimation("fadeOut", 1, 0);
+        const animation = this._createFadeAnimation("fadeOut", 1, 0);
         this._dialogueText.animations.push(animation);
         this._scene.beginAnimation(this._dialogueText, 0, 30, false, 1, onComplete);
     }
-    
 
+    /**
+     * Nettoie la scène CutScene.
+     */
     public dispose(): void {
         this._scene.dispose();
     }

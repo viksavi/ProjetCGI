@@ -2,16 +2,30 @@ import { AbstractScene } from "../baseScenes/abstractScene";
 import { Engine, FreeCamera, Vector3, Color4, ParticleSystem, Texture, Sound } from "@babylonjs/core";
 import { AdvancedDynamicTexture, Button, Control, TextBlock } from "@babylonjs/gui";
 
+/**
+ * Scène d’introduction du jeu avec particules, musique et bouton "Start".
+ */
 export class StartScene extends AbstractScene {
 
+    /** Callback pour passer à la scène CutScene */
     private _goToCutScene: () => void;
+
+    /** Musique de fond de la scène d’accueil */
     private _backgroundMusic: Sound;
 
+    /**
+     * Constructeur de la scène d’introduction.
+     * @param engine - Moteur Babylon.js
+     * @param goToCutScene - Fonction appelée pour passer à la scène suivante
+     */
     constructor(engine: Engine, goToCutScene: () => void) {
         super(engine);
         this._goToCutScene = goToCutScene;
     }
 
+    /**
+     * Charge tous les éléments de la scène de démarrage : caméra, particules, UI, musique, interactions.
+     */
     public async load(): Promise<void> {
 
         this._scene.clearColor = Color4.FromHexString("#0A1A2A");
@@ -76,8 +90,8 @@ export class StartScene extends AbstractScene {
         startBtn.height = "60px";
         startBtn.color = "#D6E4F0";
         startBtn.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-        
-        // Transparence initiale (presque transparent)
+
+        // Transparence initiale
         startBtn.background = "rgba(27, 43, 64, 0.3)";
         startBtn.cornerRadius = 15;
         startBtn.thickness = 0;
@@ -85,11 +99,12 @@ export class StartScene extends AbstractScene {
         startBtn.fontSize = 28;
         startBtn.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
 
-        // Augmente l'opacité au survol
-        startBtn.onPointerEnterObservable.add(() => startBtn.background = "rgba(44, 62, 86, 0.5)"); // Alpha à 0.5 au survol
-        startBtn.onPointerOutObservable.add(() => startBtn.background = "rgba(27, 43, 64, 0.3)"); // Retour à la transparence initiale
+        // Réactions au survol
+        startBtn.onPointerEnterObservable.add(() => startBtn.background = "rgba(44, 62, 86, 0.5)");
+        startBtn.onPointerOutObservable.add(() => startBtn.background = "rgba(27, 43, 64, 0.3)");
         ui.addControl(startBtn);
 
+        // Clique sur le bouton : changement de scène
         startBtn.onPointerDownObservable.add(() => {
             this._goToCutScene();
             this._scene.detachControl();
@@ -97,6 +112,7 @@ export class StartScene extends AbstractScene {
 
         await this._scene.whenReadyAsync();
 
+        // Musique d’ambiance
         this._backgroundMusic = new Sound("backgroundMusic", "../../../sounds/startScene.mp3", this._scene, () => {
             this._backgroundMusic.loop = true;
             this._backgroundMusic.setVolume(0.2);
@@ -104,6 +120,9 @@ export class StartScene extends AbstractScene {
         });
     }
 
+    /**
+     * Détruit et libère la scène.
+     */
     public dispose(): void {
         this._scene.dispose();
     }

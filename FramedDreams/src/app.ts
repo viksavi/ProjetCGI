@@ -9,8 +9,11 @@ import { MainScene } from "./scenes/gameScenes/mainScene";
 import { Scene0 } from "./scenes/gameScenes/scene_0";
 
 enum State {START = 0, CUT_SCENE = 1, MAIN_SCENE = 2, SCENE_0 = 3}
-
-class App {
+/**
+ * Classe principale de l'application.
+ * Gère les scènes.
+ */
+export class App {
     
     private _scene: AbstractScene;
     private _canvas: HTMLCanvasElement;
@@ -25,14 +28,16 @@ class App {
     private _scene0: Scene0;
     private _marsVisited: boolean = false;
 
+    /**
+     * Constructeur de l'application.
+     * Initialise le canvas, le moteur Babylon.js.
+     */
     constructor() {
         this._canvas = this._createCanvas();
         this._engine = new Engine(this._canvas, true);
         this._inputMap = {};
 
-        // hide/show the Inspector
         window.addEventListener("keydown", (ev) => {
-            // Shift+Ctrl+Alt+I
             if (ev.shiftKey && ev.ctrlKey && ev.altKey) {
                 if (this._scene.getScene().debugLayer.isVisible()) {
                     this._scene.getScene().debugLayer.hide();
@@ -45,33 +50,35 @@ class App {
         });
 
         window.addEventListener("keyup", (ev) => {
-            // Store the state of the input.
-            this._inputMap[ev.code] = ev.type == "keydown"; // Store key state (pressed or released)
+            this._inputMap[ev.code] = ev.type == "keydown";
         });
 
-        // run the main render loop
         this._main();
     }
 
+    /**
+     * Méthode principale de l'application.
+     * Démarre la première scène et la boucle de rendu.
+     */
     private async _main(): Promise<void> {
         await this._goToStart();
-    
-        // Register a render loop to repeatedly render the scene
+
         this._engine.runRenderLoop(() => {
             if (this._scene) {
                 this._scene.getScene().render();
             }
         });
-    
-        //resize if the screen is resized/rotated
+
         window.addEventListener('resize', () => {
             this._engine.resize();
         });
     }
 
+    /**
+     * Crée et configure dynamiquement un élément canvas HTML pour le rendu.
+     * @returns Le canvas HTML utilisé par Babylon.js.
+     */
     private _createCanvas(): HTMLCanvasElement {
-
-        //Commented out for development
         document.documentElement.style["overflow"] = "hidden";
         document.documentElement.style.overflow = "hidden";
         document.documentElement.style.width = "100%";
@@ -84,7 +91,6 @@ class App {
         document.body.style.margin = "0";
         document.body.style.padding = "0";
 
-        //create the canvas html element and attach it to the webpage
         this._canvas = document.createElement("canvas");
         this._canvas.style.width = "100%";
         this._canvas.style.height = "100%";
@@ -94,6 +100,9 @@ class App {
         return this._canvas;
     }
 
+    /**
+     * Charge et affiche la scène de démarrage (StartScene).
+     */
     private async _goToStart() {
         this._engine.displayLoadingUI();
 
@@ -109,6 +118,9 @@ class App {
         this._engine.hideLoadingUI();
     }
 
+    /**
+     * Charge et affiche la scène intermédiaire (CutScene), puis prépare la scène principale.
+     */
     private async _goToCutScene(): Promise<void> {
         this._engine.displayLoadingUI();
 
@@ -126,14 +138,21 @@ class App {
         this._engine.hideLoadingUI();
     }
 
+    /**
+     * Charge la scène principale du jeu (MainScene).
+     * @returns Une promesse contenant l'objet MainScene chargé.
+     */
     private async _loadMainScene(): Promise<MainScene> {
-
         const mainScene = new MainScene(this._engine, () => this._goToScene0(), this._canvas, this._marsVisited);
         await mainScene.load();
         console.log("Main Scene loaded");
         return mainScene;
     }
 
+    /**
+     * Passe à la scène principale du jeu.
+     * Gère également la logique si la scène 0 a déjà été visitée.
+     */
     private async _goToMainScene(): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 500)); 
         this._engine.displayLoadingUI();
@@ -155,6 +174,9 @@ class App {
         }
     }
 
+    /**
+     * Passe à la scène 0 (Scene0).
+     */
     private async _goToScene0(): Promise<void> {
         if (this._state === State.MAIN_SCENE) {
             const mainScene = this._scene as MainScene;
@@ -174,7 +196,6 @@ class App {
 
         this._engine.hideLoadingUI();
     }
-
-
 }
+
 new App();
