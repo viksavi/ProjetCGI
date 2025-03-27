@@ -3,19 +3,15 @@ import { Scene, Mesh, Vector3 } from "@babylonjs/core";
 import { Player } from "../mars/character/characterController";
 
 export class GUIJournal {
-    private _scene: Scene;
     private _uiTexture: AdvancedDynamicTexture;
     private _panel: Rectangle;
     private _image: Image;
     private _bookGrabDistance: number = 1;
-    private _book: Mesh;
     private _player: Mesh;
     public journalOpen: boolean = false;
     private _isManuallyClosed: boolean = false;
     
-    constructor(scene: Scene, book: Mesh, player: Mesh) {
-        this._scene = scene;
-        this._book = book;
+    constructor(player: Mesh) {
         this._player = player;
         this._uiTexture = AdvancedDynamicTexture.CreateFullscreenUI("Journal");
 
